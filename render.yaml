@@ -2,7 +2,7 @@ services:
   - type: web
     name: rl-guide
     runtime: node
-    buildCommand: npm install -g pnpm && pnpm install && pnpm build --filter=docs
+    buildCommand: npm install -g pnpm bun && pnpm install && pnpm build --filter=docs
     startCommand: cd apps/docs && pnpm start
     envVars:
       - key: NODE_VERSION
