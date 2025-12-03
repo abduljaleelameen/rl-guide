@@ -11,6 +11,7 @@ export const linkItems: LinkItemType[] = [
   {
     type: 'icon',
     label: 'GitHub',
+    text: 'GitHub',
     icon: <GitHubIcon />,
     url: 'https://github.com/abduljaleelameen/rl-guide',
     external: true,
