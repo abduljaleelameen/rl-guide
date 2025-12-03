@@ -6,14 +6,11 @@ icon: Smile
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-<div className="flex items-center justify-between mb-6">
-  <div className="text-3xl font-bold text-green-500">Example 1: Sentiment Control</div>
-  <div className="px-4 py-2 rounded-full bg-green-500 text-white font-bold">
+<div className="flex justify-end mb-4">
+  <div className="px-4 py-2 rounded-full bg-green-500 text-white font-bold text-sm">
     ⏱️ 15 minutes
   </div>
 </div>
-
-**Goal:** Train a model to always respond with positive, uplifting messages.
 
 ## For Non-Technical People
 
@@ -198,11 +195,11 @@ print("✅ Model now trained to be positive!")
   Reward functions don't have to be complex! This simple sentiment-based reward transformed the model's personality. The key insight: **reward what you want more of**. By giving high rewards to positive outputs, the model learned to be optimistic.
 </Callout>
 
-## Interactive Playground
+## Try It Yourself
 
-Try modifying the reward function below and run the tests to see how different reward strategies affect the scores:
-
-<CodePlayground />
+<Callout title="Run on Google Colab" type="info">
+  Copy the code above and run it in [Google Colab](https://colab.research.google.com/) for free! Colab provides free GPU access, making it perfect for experimenting with RL training.
+</Callout>
 
 ## Try This Challenge
 

@@ -12,7 +12,10 @@ export function Body({
   const mode = useMode();
 
   return (
-    <body className={cn(mode, 'relative flex min-h-screen flex-col')}>
+    <body
+      className={cn(mode, 'relative flex min-h-screen flex-col')}
+      suppressHydrationWarning
+    >
       {children}
     </body>
   );

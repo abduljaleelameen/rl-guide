@@ -115,6 +115,9 @@ export default defineConfig({
         remarkAutoTypeTable,
         remarkTypeScriptToJavaScript,
       ],
+      remarkImageOptions: {
+        useImport: false, // Disable static imports for images - fixes SVG loading issues
+      },
       rehypePlugins: (v) => [rehypeKatex, ...v],
     };
   },
