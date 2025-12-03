@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="#0f172a"/>
+  <text x="600" y="40" font-size="26" font-weight="bold" fill="#e2e8f0" text-anchor="middle">PPO Formula Breakdown</text>
+
+  <rect x="100" y="100" width="1000" height="80" fill="#1e293b" stroke="#f59e0b" stroke-width="3" rx="8"/>
+  <text x="600" y="150" font-size="18" fill="#f59e0b" text-anchor="middle" font-family="monospace">L = min(r()  A, clip(r(), 1-, 1+)  A)</text>
+
+  <!-- Component explanations -->
+  <rect x="100" y="220" width="450" height="200" fill="#0f172a" stroke="#3b82f6" stroke-width="2" rx="8"/>
+  <text x="325" y="255" font-size="16" fill="#3b82f6" font-weight="bold" text-anchor="middle">r() = Probability Ratio</text>
+  <text x="130" y="290" font-size="13" fill="#cbd5e1">r() = _new(a|s) / _old(a|s)</text>
+  <text x="150" y="325" font-size="12" fill="#94a3b8">How much policy changed</text>
+  <text x="150" y="350" font-size="12" fill="#94a3b8">r = 1.0  no change</text>
+  <text x="150" y="375" font-size="12" fill="#94a3b8">r = 2.0  doubled probability</text>
+  <text x="150" y="400" font-size="12" fill="#94a3b8">r = 0.5  halved probability</text>
+
+  <rect x="650" y="220" width="450" height="200" fill="#0f172a" stroke="#10b981" stroke-width="2" rx="8"/>
+  <text x="875" y="255" font-size="16" fill="#10b981" font-weight="bold" text-anchor="middle">A = Advantage</text>
+  <text x="680" y="290" font-size="13" fill="#cbd5e1">A = R - baseline</text>
+  <text x="700" y="325" font-size="12" fill="#94a3b8">How good is this action?</text>
+  <text x="700" y="350" font-size="12" fill="#10b981">A &gt; 0  better than average</text>
+  <text x="700" y="375" font-size="12" fill="#ef4444">A &lt; 0  worse than average</text>
+
+  <rect x="100" y="450" width="1000" height="200" fill="#0f172a" stroke="#8b5cf6" stroke-width="2" rx="8"/>
+  <text x="600" y="485" font-size="16" fill="#8b5cf6" font-weight="bold" text-anchor="middle">clip(r, 1-, 1+) = Clipping</text>
+  <text x="130" y="520" font-size="13" fill="#cbd5e1">Prevents too large updates ( = 0.2 typically)</text>
+  <text x="150" y="555" font-size="12" fill="#cbd5e1"> If r = 1.5 and  = 0.2: clipped to 1.2 (max allowed)</text>
+  <text x="150" y="585" font-size="12" fill="#cbd5e1"> If r = 0.6 and  = 0.2: clipped to 0.8 (min allowed)</text>
+  <text x="150" y="615" font-size="12" fill="#10b981"> Ensures stable training (no wild jumps!)</text>
+</svg>

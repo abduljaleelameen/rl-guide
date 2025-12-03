@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+  <rect width="1200" height="800" fill="#0f172a"/>
+  <text x="600" y="40" font-size="28" font-weight="bold" fill="#e2e8f0" text-anchor="middle">PacMan RL Analogy</text>
+  <text x="600" y="70" font-size="14" fill="#94a3b8" text-anchor="middle">How LLMs Learn Like Game AI</text>
+
+  <!-- PacMan Section -->
+  <rect x="100" y="120" width="500" height="300" fill="#1e293b" stroke="#fbbf24" stroke-width="3" rx="12"/>
+  <text x="350" y="160" font-size="20" font-weight="bold" fill="#fbbf24" text-anchor="middle"> PacMan Game</text>
+
+  <text x="120" y="200" font-size="14" fill="#cbd5e1">Agent: PacMan character</text>
+  <text x="120" y="230" font-size="14" fill="#cbd5e1">State: Current maze position</text>
+  <text x="120" y="260" font-size="14" fill="#cbd5e1">Action: Move up/down/left/right</text>
+  <text x="120" y="290" font-size="14" fill="#cbd5e1">Reward:</text>
+  <text x="140" y="315" font-size="13" fill="#10b981">  +10 points for eating dot</text>
+  <text x="140" y="340" font-size="13" fill="#f59e0b">  +200 for eating ghost</text>
+  <text x="140" y="365" font-size="13" fill="#ef4444">  -500 if ghost catches you</text>
+  <text x="120" y="400" font-size="14" fill="#cbd5e1" font-weight="bold">Goal: Maximize total score</text>
+
+  <!-- LLM Section -->
+  <rect x="650" y="120" width="500" height="300" fill="#1e293b" stroke="#8b5cf6" stroke-width="3" rx="12"/>
+  <text x="900" y="160" font-size="20" font-weight="bold" fill="#8b5cf6" text-anchor="middle"> Language Model</text>
+
+  <text x="670" y="200" font-size="14" fill="#cbd5e1">Agent: LLM (e.g., GPT)</text>
+  <text x="670" y="230" font-size="14" fill="#cbd5e1">State: Current prompt text</text>
+  <text x="670" y="260" font-size="14" fill="#cbd5e1">Action: Generate next tokens</text>
+  <text x="670" y="290" font-size="14" fill="#cbd5e1">Reward:</text>
+  <text x="690" y="315" font-size="13" fill="#10b981">  +3.0 for correct answer</text>
+  <text x="690" y="340" font-size="13" fill="#f59e0b">  +1.5 for partial credit</text>
+  <text x="690" y="365" font-size="13" fill="#ef4444">  -2.0 for wrong/harmful</text>
+  <text x="670" y="400" font-size="14" fill="#cbd5e1" font-weight="bold">Goal: Maximize reward score</text>
+
+  <!-- Comparison Box -->
+  <rect x="100" y="470" width="1000" height="280" fill="#1e293b" stroke="#10b981" stroke-width="3" rx="12"/>
+  <text x="600" y="510" font-size="20" font-weight="bold" fill="#10b981" text-anchor="middle">Key Similarity: Learning from Experience</text>
+
+  <rect x="130" y="540" width="450" height="180" fill="#0f172a" stroke="#fbbf24" stroke-width="2" rx="8"/>
+  <text x="355" y="570" font-size="16" fill="#fbbf24" font-weight="bold" text-anchor="middle">PacMan Learning Process</text>
+  <text x="150" y="600" font-size="13" fill="#cbd5e1">1. Try moving right</text>
+  <text x="150" y="625" font-size="13" fill="#cbd5e1">2. Get eaten by ghost (-500)</text>
+  <text x="150" y="650" font-size="13" fill="#cbd5e1">3. Learn: "Don't move right there"</text>
+  <text x="150" y="675" font-size="13" fill="#cbd5e1">4. Next time: Try different move</text>
+  <text x="150" y="700" font-size="13" fill="#10b981" font-weight="bold">Result: Better at avoiding ghosts!</text>
+
+  <rect x="620" y="540" width="450" height="180" fill="#0f172a" stroke="#8b5cf6" stroke-width="2" rx="8"/>
+  <text x="845" y="570" font-size="16" fill="#8b5cf6" font-weight="bold" text-anchor="middle">LLM Learning Process</text>
+  <text x="640" y="600" font-size="13" fill="#cbd5e1">1. Try generating "42"</text>
+  <text x="640" y="625" font-size="13" fill="#cbd5e1">2. Get reward -2.0 (wrong)</text>
+  <text x="640" y="650" font-size="13" fill="#cbd5e1">3. Learn: "Don't say 42 here"</text>
+  <text x="640" y="675" font-size="13" fill="#cbd5e1">4. Next time: Try different answer</text>
+  <text x="640" y="700" font-size="13" fill="#10b981" font-weight="bold">Result: Better at answering correctly!</text>
+</svg>

@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 900">
+  <rect width="1400" height="900" fill="#0f172a"/>
+  <text x="700" y="40" font-size="28" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Complete RL Workflow (End-to-End)</text>
+
+  <!-- Phase 1: Setup -->
+  <rect x="50" y="100" width="300" height="150" fill="#1e293b" stroke="#3b82f6" stroke-width="3" rx="10"/>
+  <text x="200" y="135" font-size="18" fill="#3b82f6" font-weight="bold" text-anchor="middle">Phase 1: Setup</text>
+  <text x="80" y="170" font-size="13" fill="#cbd5e1">1. Choose base model</text>
+  <text x="80" y="193" font-size="13" fill="#cbd5e1">2. Prepare dataset</text>
+  <text x="80" y="216" font-size="13" fill="#cbd5e1">3. Design reward function</text>
+  <text x="80" y="239" font-size="13" fill="#10b981"> Ready to train</text>
+
+  <path d="M 350 175 L 400 175" stroke="#10b981" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- Phase 2: Training -->
+  <rect x="400" y="100" width="300" height="150" fill="#1e293b" stroke="#8b5cf6" stroke-width="3" rx="10"/>
+  <text x="550" y="135" font-size="18" fill="#8b5cf6" font-weight="bold" text-anchor="middle">Phase 2: Training</text>
+  <text x="430" y="170" font-size="13" fill="#cbd5e1">4. Generate responses</text>
+  <text x="430" y="193" font-size="13" fill="#cbd5e1">5. Compute rewards</text>
+  <text x="430" y="216" font-size="13" fill="#cbd5e1">6. Update policy (PPO/GRPO)</text>
+  <text x="430" y="239" font-size="13" fill="#10b981"> Model improving</text>
+
+  <path d="M 700 175 L 750 175" stroke="#10b981" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- Phase 3: Evaluation -->
+  <rect x="750" y="100" width="300" height="150" fill="#1e293b" stroke="#fbbf24" stroke-width="3" rx="10"/>
+  <text x="900" y="135" font-size="18" fill="#fbbf24" font-weight="bold" text-anchor="middle">Phase 3: Evaluation</text>
+  <text x="780" y="170" font-size="13" fill="#cbd5e1">7. Test on held-out set</text>
+  <text x="780" y="193" font-size="13" fill="#cbd5e1">8. Human evaluation</text>
+  <text x="780" y="216" font-size="13" fill="#cbd5e1">9. Check for issues</text>
+  <text x="780" y="239" font-size="13" fill="#10b981"> Quality validated</text>
+
+  <path d="M 1050 175 L 1100 175" stroke="#10b981" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- Phase 4: Deployment -->
+  <rect x="1050" y="100" width="300" height="150" fill="#1e293b" stroke="#10b981" stroke-width="3" rx="10"/>
+  <text x="1200" y="135" font-size="18" fill="#10b981" font-weight="bold" text-anchor="middle">Phase 4: Deploy</text>
+  <text x="1080" y="170" font-size="13" fill="#cbd5e1">10. Canary rollout (5%)</text>
+  <text x="1080" y="193" font-size="13" fill="#cbd5e1">11. Monitor metrics</text>
+  <text x="1080" y="216" font-size="13" fill="#cbd5e1">12. Full deployment</text>
+  <text x="1080" y="239" font-size="13" fill="#10b981"> Production ready!</text>
+
+  <!-- Detailed Training Loop -->
+  <rect x="50" y="300" width="1300" height="280" fill="#0f172a" stroke="#ec4899" stroke-width="3" rx="10"/>
+  <text x="700" y="340" font-size="20" fill="#ec4899" font-weight="bold" text-anchor="middle">Training Loop Detail (Phase 2)</text>
+
+  <!-- Step 1 -->
+  <rect x="80" y="370" width="230" height="180" fill="#1e293b" stroke="#3b82f6" stroke-width="2" rx="8"/>
+  <text x="195" y="400" font-size="15" fill="#3b82f6" font-weight="bold" text-anchor="middle">Generate</text>
+  <text x="105" y="430" font-size="12" fill="#cbd5e1">Input: Prompt</text>
+  <text x="105" y="453" font-size="12" fill="#cbd5e1">Model: Policy _</text>
+  <text x="105" y="476" font-size="12" fill="#cbd5e1">Output: N responses</text>
+  <text x="105" y="499" font-size="12" fill="#cbd5e1">(N = 4-16)</text>
+  <text x="105" y="522" font-size="11" fill="#94a3b8">Temp = 0.7-1.0</text>
+
+  <path d="M 310 460 L 360 460" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 2 -->
+  <rect x="360" y="370" width="230" height="180" fill="#1e293b" stroke="#8b5cf6" stroke-width="2" rx="8"/>
+  <text x="475" y="400" font-size="15" fill="#8b5cf6" font-weight="bold" text-anchor="middle">Score</text>
+  <text x="385" y="430" font-size="12" fill="#cbd5e1">For each response:</text>
+  <text x="385" y="453" font-size="12" fill="#cbd5e1">r = reward(prompt, resp)</text>
+  <text x="385" y="476" font-size="12" fill="#10b981">Good  r = +1.5</text>
+  <text x="385" y="499" font-size="12" fill="#ef4444">Bad  r = -0.5</text>
+  <text x="385" y="522" font-size="11" fill="#94a3b8">Store experiences</text>
+
+  <path d="M 590 460 L 640 460" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 3 -->
+  <rect x="640" y="370" width="230" height="180" fill="#1e293b" stroke="#fbbf24" stroke-width="2" rx="8"/>
+  <text x="755" y="400" font-size="15" fill="#fbbf24" font-weight="bold" text-anchor="middle">Advantage</text>
+  <text x="665" y="430" font-size="12" fill="#cbd5e1">Normalize rewards:</text>
+  <text x="665" y="453" font-size="12" fill="#cbd5e1">A = (r - mean) / std</text>
+  <text x="665" y="476" font-size="12" fill="#10b981">A &gt; 0: Better than avg</text>
+  <text x="665" y="499" font-size="12" fill="#ef4444">A &lt; 0: Worse than avg</text>
+  <text x="665" y="522" font-size="11" fill="#94a3b8">Reduces variance</text>
+
+  <path d="M 870 460 L 920 460" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Step 4 -->
+  <rect x="920" y="370" width="230" height="180" fill="#1e293b" stroke="#10b981" stroke-width="2" rx="8"/>
+  <text x="1035" y="400" font-size="15" fill="#10b981" font-weight="bold" text-anchor="middle">Update</text>
+  <text x="945" y="430" font-size="12" fill="#cbd5e1">PPO/GRPO step:</text>
+  <text x="945" y="453" font-size="12" fill="#10b981"> P(high advantage)</text>
+  <text x="945" y="476" font-size="12" fill="#ef4444"> P(low advantage)</text>
+  <text x="945" y="499" font-size="12" fill="#cbd5e1">Clipped updates</text>
+  <text x="945" y="522" font-size="11" fill="#94a3b8">Policy improved!</text>
+
+  <path d="M 1150 460 L 1200 460" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Repeat -->
+  <ellipse cx="1260" cy="460" rx="60" ry="40" fill="#ec4899" stroke="#f472b6" stroke-width="2"/>
+  <text x="1260" y="465" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Repeat</text>
+  <text x="1260" y="482" font-size="11" fill="#fce7f3" text-anchor="middle">5K-20K steps</text>
+
+  <!-- Monitoring -->
+  <rect x="50" y="620" width="1300" height="120" fill="#1e293b" stroke="#06b6d4" stroke-width="3" rx="10"/>
+  <text x="700" y="655" font-size="18" fill="#06b6d4" font-weight="bold" text-anchor="middle"> Throughout Training: Monitor</text>
+  <text x="80" y="690" font-size="13" fill="#cbd5e1"> Average reward (should increase)</text>
+  <text x="80" y="715" font-size="13" fill="#cbd5e1"> Loss curves (should decrease)</text>
+  <text x="550" y="690" font-size="13" fill="#cbd5e1"> KL divergence (should be &lt; 0.1)</text>
+  <text x="550" y="715" font-size="13" fill="#cbd5e1"> Sample generations (check quality)</text>
+  <text x="1000" y="690" font-size="13" fill="#ef4444"> Stop if reward collapses</text>
+  <text x="1000" y="715" font-size="13" fill="#ef4444"> Stop if KL diverges</text>
+
+  <!-- Key Takeaway -->
+  <rect x="50" y="770" width="1300" height="100" fill="#10b981" rx="10"/>
+  <text x="700" y="810" font-size="18" font-weight="bold" fill="white" text-anchor="middle"> Key Takeaway</text>
+  <text x="700" y="840" font-size="15" fill="#d1fae5" text-anchor="middle">RL is an iterative process: Generate  Score  Improve  Repeat</text>
+  <text x="700" y="865" font-size="14" fill="#d1fae5" text-anchor="middle">Success requires good reward design, careful monitoring, and patient tuning!</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#10b981"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,455 @@
+---
+title: Training Optimization
+description: Advanced techniques for faster training and better results
+icon: Zap
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+## Training Optimization
+
+Learn how to train faster, use less memory, and achieve better results through hyperparameter tuning and optimization techniques.
+
+## Memory Optimization
+
+<Tabs items={['4-bit Quantization', 'Gradient Checkpointing', 'LoRA Rank Tuning']}>
+  <Tab value="4-bit Quantization">
+    ### 4-bit Quantization (QLoRA)
+
+    Reduces model memory by 75% with minimal quality loss.
+
+    ```python
+    from unsloth import FastLanguageModel
+
+    model, tokenizer = FastLanguageModel.from_pretrained(
+        model_name="Qwen/Qwen2.5-3B-Instruct",
+        load_in_4bit=True,  # 75% memory reduction
+        dtype=None,         # Auto-detect optimal dtype
+    )
+    ```
+
+    **Memory Comparison:**
+    | Model Size | FP16 (GB) | 4-bit (GB) | Savings |
+    |------------|-----------|------------|---------|
+    | 3B params | 12 GB | 3 GB | 75% |
+    | 7B params | 28 GB | 7 GB | 75% |
+    | 14B params | 56 GB | 14 GB | 75% |
+
+    <Callout type="success">
+      **Recommendation:** Always use 4-bit for models 3B+. Quality degradation is negligible (&lt;1%) for RL training.
+    </Callout>
+  </Tab>
+
+  <Tab value="Gradient Checkpointing">
+    ### Gradient Checkpointing
+
+    Trades compute for memory by recomputing activations during backward pass.
+
+    ```python
+    model = FastLanguageModel.get_peft_model(
+        model,
+        use_gradient_checkpointing="unsloth",  # Optimized implementation
+        # ... other params
+    )
+    ```
+
+    **Impact:**
+    - Memory: -40% (saves ~8GB on 7B model)
+    - Speed: -15% (slightly slower due to recomputation)
+    - **Net:** Can train larger batch sizes → faster overall
+
+    **When to Use:**
+    - Always for models 7B+
+    - When hitting OOM errors
+    - When you want larger batch sizes
+  </Tab>
+
+  <Tab value="LoRA Rank Tuning">
+    ### LoRA Rank Selection
+
+    Lower rank = less memory, faster training, but potentially lower quality.
+
+    ```python
+    model = FastLanguageModel.get_peft_model(
+        model,
+        r=16,  # LoRA rank (8, 16, 32, 64)
+        # Lower rank = less memory
+    )
+    ```
+
+    **Rank Guidelines:**
+
+    | Rank | Memory | Quality | Use Case |
+    |------|--------|---------|----------|
+    | 8 | Minimal | Good | Simple tasks (sentiment, classification) |
+    | 16 | Low | Great | Most RL tasks (recommended) |
+    | 32 | Medium | Excellent | Complex reasoning, coding |
+    | 64 | High | Best | Multi-domain, production |
+
+    **Rule of Thumb:**
+    - Start with r=16
+    - Increase to r=32 if validation reward plateaus
+    - Only use r=64 for production deployments
+  </Tab>
+</Tabs>
+
+## Hyperparameter Tuning
+
+### Critical Hyperparameters
+
+<Cards>
+  <Card title="Learning Rate">
+    **Most important parameter for stable training.**
+
+    ```python
+    # Conservative (safer)
+    learning_rate=1e-6
+
+    # Standard (recommended)
+    learning_rate=5e-6
+
+    # Aggressive (faster, riskier)
+    learning_rate=1e-5
+    ```
+
+    **Guidelines:**
+    - Start with 5e-6
+    - Lower if loss becomes NaN
+    - Higher if training too slow
+    - Use learning rate scheduler for long training
+  </Card>
+
+  <Card title="num_generations">
+    **Number of responses per prompt (GRPO-specific).**
+
+    ```python
+    # Fast but noisy
+    num_generations=4
+
+    # Balanced (recommended)
+    num_generations=8
+
+    # Stable but slow
+    num_generations=16
+    ```
+
+    **Trade-offs:**
+    - Higher = better advantage estimates
+    - Higher = more VRAM usage
+    - Higher = longer training time
+    - Sweet spot: 8-12 for most tasks
+  </Card>
+
+  <Card title="Temperature">
+    **Controls exploration vs exploitation.**
+
+    ```python
+    # Focused (math, code)
+    temperature=0.8
+
+    # Balanced (recommended)
+    temperature=1.0
+
+    # Exploratory (creative tasks)
+    temperature=1.3
+    ```
+
+    **By Task Type:**
+    - Math/Code: 0.8-1.0
+    - General QA: 1.0-1.2
+    - Creative writing: 1.2-1.5
+  </Card>
+
+  <Card title="KL Coefficient">
+    **Prevents model from drifting too far from base.**
+
+    ```python
+    # Weak constraint
+    kl_coef=0.01
+
+    # Standard (recommended)
+    kl_coef=0.05
+
+    # Strong constraint
+    kl_coef=0.1
+    ```
+
+    **When to Adjust:**
+    - Increase if model degrading
+    - Decrease if learning too slowly
+    - Monitor KL divergence in logs
+  </Card>
+</Cards>
+
+## Speed Optimization
+
+### 1. Use vLLM for Generation
+
+**10-25x speedup** for inference during GRPO.
+
+```python
+# See Example 7 for full implementation
+from openai import OpenAI
+
+vllm_client = OpenAI(
+    base_url="http://localhost:8000/v1",
+    api_key="EMPTY"
+)
+
+# vLLM generates 10x faster than model.generate()
+```
+
+<Callout type="success">
+  **Production Requirement:** vLLM is mandatory for production RL training. The speed difference is too significant to ignore.
+</Callout>
+
+### 2. Increase Batch Size
+
+Utilize full GPU capacity:
+
+```python
+config = GRPOConfig(
+    per_device_train_batch_size=4,  # Increase if VRAM allows
+    gradient_accumulation_steps=4,   # Effective batch = 4 × 4 = 16
+)
+```
+
+**Finding Optimal Batch Size:**
+```python
+# Start small and increase until OOM
+for batch_size in [1, 2, 4, 8]:
+    try:
+        config = GRPOConfig(per_device_train_batch_size=batch_size)
+        # Try one training step
+        print(f"Batch size {batch_size}: SUCCESS")
+    except torch.cuda.OutOfMemoryError:
+        print(f"Batch size {batch_size}: OOM")
+        break
+```
+
+### 3. Mixed Precision Training
+
+Use bfloat16 for A100/H100 GPUs:
+
+```python
+config = GRPOConfig(
+    bf16=True,  # Faster on modern GPUs
+    fp16=False,
+)
+```
+
+**Performance Impact:**
+- Speed: +30-50% faster
+- Memory: -30% usage
+- Quality: No degradation with bf16
+
+## Quality Optimization
+
+### 1. Multi-Stage Training
+
+Following DeepSeek's approach:
+
+```python
+# Stage 1: Supervised Fine-Tuning (optional but helpful)
+sft_config = SFTConfig(
+    num_train_epochs=2,
+    learning_rate=1e-5,
+)
+# ... train with SFT
+
+# Stage 2: Cold-start RL (lower learning rate)
+cold_config = GRPOConfig(
+    num_train_epochs=1,
+    learning_rate=1e-6,  # Lower for stability
+)
+# ... train with GRPO
+
+# Stage 3: Full RL
+full_config = GRPOConfig(
+    num_train_epochs=3,
+    learning_rate=5e-6,
+)
+# ... train with GRPO
+```
+
+### 2. Reward Shaping
+
+Design rewards for faster learning:
+
+```python
+def shaped_reward(prompts, outputs, **kwargs):
+    """Well-shaped reward function"""
+    rewards = []
+
+    for output in outputs:
+        # Start with base reward
+        reward = base_correctness_check(output)
+
+        # Add intermediate milestones
+        if "step 1" in output:
+            reward += 0.3  # Reward showing work
+
+        if "final answer" in output:
+            reward += 0.2  # Reward structure
+
+        # Normalize to [-1, 3] range
+        reward = max(-1, min(3, reward))
+
+        rewards.append(reward)
+
+    return rewards
+```
+
+**Reward Shaping Principles:**
+- Provide intermediate rewards (not just final)
+- Use graduated scaling (not binary)
+- Normalize to consistent range
+- Avoid sparse rewards
+
+### 3. Curriculum Learning
+
+Start easy, increase difficulty:
+
+```python
+# Week 1: Simple problems
+easy_dataset = dataset.filter(lambda x: x['difficulty'] == 'easy')
+
+# Week 2: Medium problems
+medium_dataset = dataset.filter(lambda x: x['difficulty'] == 'medium')
+
+# Week 3: Hard problems
+hard_dataset = dataset.filter(lambda x: x['difficulty'] == 'hard')
+
+# Week 4: Mixed
+full_dataset = dataset
+```
+
+## Advanced Techniques
+
+### Learning Rate Scheduling
+
+Gradually decay learning rate:
+
+```python
+from transformers import get_cosine_schedule_with_warmup
+
+config = GRPOConfig(
+    learning_rate=5e-6,
+    lr_scheduler_type="cosine",
+    warmup_steps=100,  # Gradual warmup
+)
+```
+
+### Reward Scaling
+
+Prevent reward explosion:
+
+```python
+class AdaptiveRewardScaler:
+    def __init__(self):
+        self.reward_history = []
+
+    def scale_rewards(self, rewards):
+        """Adaptive reward normalization"""
+        self.reward_history.extend(rewards)
+
+        # Keep last 1000 rewards
+        if len(self.reward_history) > 1000:
+            self.reward_history = self.reward_history[-1000:]
+
+        # Normalize to zero mean, unit variance
+        mean = np.mean(self.reward_history)
+        std = np.std(self.reward_history) + 1e-8
+
+        scaled = [(r - mean) / std for r in rewards]
+        return scaled
+```
+
+### Checkpoint Management
+
+Save best models automatically:
+
+```python
+config = GRPOConfig(
+    output_dir="./checkpoints",
+    save_strategy="steps",
+    save_steps=100,
+    save_total_limit=5,  # Keep only 5 best
+    load_best_model_at_end=True,
+    metric_for_best_model="eval_reward",
+    greater_is_better=True,
+)
+```
+
+## Monitoring & Metrics
+
+### Essential Metrics to Track
+
+```python
+import wandb
+
+wandb.init(project="rl-optimization")
+
+# Track during training:
+metrics = {
+    # Reward metrics
+    "reward/mean": np.mean(rewards),
+    "reward/std": np.std(rewards),
+    "reward/min": np.min(rewards),
+    "reward/max": np.max(rewards),
+
+    # Training metrics
+    "train/loss": loss,
+    "train/kl_div": kl_divergence,
+    "train/learning_rate": current_lr,
+
+    # System metrics
+    "system/gpu_memory": torch.cuda.memory_allocated(),
+    "system/tokens_per_second": tokens_per_sec,
+}
+
+wandb.log(metrics)
+```
+
+### Red Flags
+
+Monitor for these warning signs:
+- **Reward std → 0:** Mode collapse
+- **KL div > 10:** Drifting from base model
+- **Loss = NaN:** Training instability
+- **Tokens/sec < 100:** Bottleneck in generation
+
+## Optimization Checklist
+
+Before training, verify:
+
+- [ ] 4-bit quantization enabled
+- [ ] Gradient checkpointing enabled
+- [ ] LoRA rank appropriate for task (16 recommended)
+- [ ] Learning rate reasonable (5e-6 default)
+- [ ] Batch size maximized for VRAM
+- [ ] vLLM configured for production
+- [ ] Wandb/logging configured
+- [ ] Validation set prepared
+- [ ] Checkpoint saving enabled
+- [ ] Early stopping configured
+
+## Performance Targets
+
+Aim for these metrics:
+
+| Metric | Target | Notes |
+|--------|--------|-------|
+| Tokens/sec | > 500 | Use vLLM to achieve |
+| GPU Utilization | > 80% | Check with `nvidia-smi` |
+| Reward Improvement | +0.5 per epoch | Depends on task |
+| Training Time | < 6 hours | For 1000 examples |
+| VRAM Usage | < 90% | Leave headroom |
+
+## Next Steps
+
+- [Debugging Guide](/docs/reinforcement-ai/training/debugging) - Fix common issues
+- [Example 7: vLLM](/docs/reinforcement-ai/examples/example-7) - 10x speedup
+- [Production Guide](/docs/reinforcement-ai/advanced/production) - Deploy optimized models

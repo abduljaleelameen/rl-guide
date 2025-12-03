@@ -1,0 +1,9 @@
+{
+  "title": "Advanced Topics",
+  "icon": "Zap",
+  "pages": [
+    "production",
+    "case-studies",
+    "glossary"
+  ]
+}

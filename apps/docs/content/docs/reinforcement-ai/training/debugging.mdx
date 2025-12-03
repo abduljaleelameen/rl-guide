@@ -1,0 +1,373 @@
+---
+title: Debugging & Troubleshooting
+description: Common pitfalls in RL training and how to fix them
+icon: Bug
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## Common Pitfalls & Debugging
+
+Even experts encounter issues. Here's how to debug the most common RL training problems, with solutions that work.
+
+![Debugging Flowchart](/reinforcement-ai/28-debugging-flowchart.svg)
+
+## Problem 1: Rewards Stuck at Zero
+
+**Symptoms:** After 200+ steps, reward column shows 0.000 consistently.
+
+### Possible Causes & Solutions
+
+| Cause | Solution |
+|-------|----------|
+| Temperature = 0 | Set temperature = 1.0-1.5 (model needs exploration) |
+| Reward too strict | Add partial credit / graduated rewards |
+| Model too small | Use 1.5B+ params (1B struggles with reasoning) |
+| No priming | Do SFT first (~50 examples, 2 epochs) |
+
+<Callout type="success" title="Quick Fix">
+  Increase temperature to 1.2, add partial rewards, and verify your reward function returns non-zero for reasonable attempts.
+</Callout>
+
+### Debugging Steps
+
+1. **Test reward function separately:**
+```python
+# Test with known good/bad outputs
+test_outputs = [
+    "The answer is 42",  # Good
+    "I don't know",      # Bad
+]
+rewards = reward_function([""], test_outputs)
+print(f"Good output reward: {rewards[0]}")
+print(f"Bad output reward: {rewards[1]}")
+
+# Should see different values
+assert rewards[0] != rewards[1], "Reward function not discriminating!"
+```
+
+2. **Check temperature:**
+```python
+config = GRPOConfig(
+    temperature=1.2,  # Must be > 0 for exploration
+    # ...
+)
+```
+
+3. **Add graduated rewards:**
+```python
+def lenient_reward(prompts, outputs, **kwargs):
+    """Reward partial correctness"""
+    rewards = []
+    for output in outputs:
+        if "correct answer" in output:
+            reward = 3.0  # Perfect
+        elif "partially correct" in output:
+            reward = 1.5  # Partial credit
+        elif len(output) > 10:
+            reward = 0.5  # At least tried
+        else:
+            reward = -0.5  # Too brief
+        rewards.append(reward)
+    return rewards
+```
+
+## Problem 2: Mode Collapse
+
+**Symptoms:** Model outputs same response repeatedly, reward high but outputs boring.
+
+### Solutions
+
+<Cards>
+  <Card title="Increase Diversity">
+    ```python
+    config = GRPOConfig(
+        num_generations=16,  # 8 → 16 or 32
+        temperature=1.3,      # Higher for more variety
+    )
+    ```
+  </Card>
+
+  <Card title="Add Diversity Penalty">
+    ```python
+    def diversity_reward(prompts, outputs, **kwargs):
+        rewards = []
+        seen_outputs = set()
+
+        for output in outputs:
+            # Base reward
+            reward = base_reward_function([output])
+
+            # Penalty for repetition
+            if output in seen_outputs:
+                reward -= 0.5
+            else:
+                seen_outputs.add(output)
+
+            rewards.append(reward)
+        return rewards
+    ```
+  </Card>
+
+  <Card title="Entropy Bonus">
+    ```python
+    from transformers import AutoTokenizer
+
+    def entropy_bonus(outputs):
+        """Reward diverse token distributions"""
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        tokens = [tokenizer.encode(o) for o in outputs]
+
+        # Calculate token diversity
+        unique_tokens = len(set(t for seq in tokens for t in seq))
+        total_tokens = sum(len(seq) for seq in tokens)
+
+        diversity_score = unique_tokens / total_tokens
+        return diversity_score * 0.5  # Bonus up to +0.5
+    ```
+  </Card>
+</Cards>
+
+<Callout type="warn" title="Prevention">
+  Always monitor output diversity. If you see repetition, act immediately before model converges.
+</Callout>
+
+## Problem 3: CUDA Out of Memory
+
+**Symptoms:** RuntimeError: CUDA out of memory during training.
+
+### Memory Optimization Hierarchy
+
+Try these in order:
+
+1. **Reduce num_generations** (most effective)
+```python
+config = GRPOConfig(
+    num_generations=4,  # 16 → 8 → 4
+)
+```
+
+2. **Increase gradient accumulation**
+```python
+config = GRPOConfig(
+    per_device_train_batch_size=1,
+    gradient_accumulation_steps=16,  # 4 → 8 → 16
+)
+```
+
+3. **Reduce sequence length**
+```python
+config = GRPOConfig(
+    max_seq_length=1024,  # 2048 → 1024
+)
+```
+
+4. **Enable gradient checkpointing** (if not already)
+```python
+model = FastLanguageModel.get_peft_model(
+    model,
+    use_gradient_checkpointing="unsloth",  # Saves memory
+)
+```
+
+5. **Reduce LoRA rank**
+```python
+model = FastLanguageModel.get_peft_model(
+    model,
+    r=8,  # 32 → 16 → 8
+)
+```
+
+<Callout type="warn" title="Memory Formula">
+  **VRAM ≈ model_size + (num_generations × context_length × batch_size) × 2**
+</Callout>
+
+### Memory Calculator
+
+```python
+def estimate_vram(model_size_gb, num_gens, seq_len, batch_size):
+    """Estimate VRAM requirements"""
+    base = model_size_gb
+    rollout = (num_gens * seq_len * batch_size * 2) / 1e9  # bytes to GB
+    total = base + rollout
+    return f"Estimated VRAM: {total:.1f} GB"
+
+# Example
+print(estimate_vram(
+    model_size_gb=6,  # 3B model in 4-bit
+    num_gens=8,
+    seq_len=512,
+    batch_size=2
+))
+# Output: "Estimated VRAM: 14.2 GB"
+```
+
+## Problem 4: Loss Becomes NaN
+
+**Symptoms:** Loss shows as "nan" in training logs.
+
+### Causes & Fixes
+
+<Cards>
+  <Card title="Learning Rate Too High">
+    ```python
+    config = GRPOConfig(
+        learning_rate=1e-6,  # Reduce from 5e-6
+    )
+    ```
+  </Card>
+
+  <Card title="Reward Explosion">
+    ```python
+    def clipped_reward(prompts, outputs, **kwargs):
+        """Prevent reward explosion"""
+        rewards = base_reward_function(prompts, outputs)
+        # Clip to safe range
+        return [max(-10, min(10, r)) for r in rewards]
+    ```
+  </Card>
+
+  <Card title="Mixed Precision Issue">
+    ```python
+    config = GRPOConfig(
+        bf16=True,   # Use bfloat16 instead of float16
+        fp16=False,  # Disable fp16
+    )
+    ```
+  </Card>
+
+  <Card title="Bad Checkpoint">
+    Resume from earlier checkpoint:
+    ```python
+    trainer.train(resume_from_checkpoint="./checkpoint-500")
+    ```
+  </Card>
+</Cards>
+
+## Problem 5: Model Degradation
+
+**Symptoms:** Validation reward drops after initial improvement.
+
+### Solutions
+
+1. **Early Stopping**
+```python
+config = GRPOConfig(
+    load_best_model_at_end=True,
+    metric_for_best_model="eval_reward",
+    greater_is_better=True,
+    early_stopping_patience=5,
+)
+```
+
+2. **KL Divergence Constraint**
+```python
+config = GRPOConfig(
+    kl_coef=0.1,  # Increase from 0.05 to constrain more
+)
+```
+
+3. **Validation Monitoring**
+```python
+# Check validation loss every 50 steps
+config = GRPOConfig(
+    eval_strategy="steps",
+    eval_steps=50,
+)
+```
+
+## Essential Debugging Toolkit
+
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
+  <div>
+    ### Logging
+    - Wandb for metric tracking
+    - Save outputs every 50 steps
+    - Log reward distribution (not just mean)
+    - Track KL divergence
+
+    ```python
+    import wandb
+    wandb.init(project="my-rl-project")
+
+    config = GRPOConfig(
+        report_to="wandb",
+        logging_steps=10,
+    )
+    ```
+  </div>
+
+  <div>
+    ### Validation
+    - Hold out 10-20% validation set
+    - Check outputs manually at steps 10, 50, 100
+    - Compare to baseline model
+    - Track multiple metrics
+
+    ```python
+    # Split data
+    train_size = int(0.8 * len(dataset))
+    train_data = dataset.select(range(train_size))
+    val_data = dataset.select(range(train_size, len(dataset)))
+    ```
+  </div>
+
+  <div>
+    ### Testing
+    - Unit test reward function separately
+    - Verify data loading works
+    - Test with tiny dataset first (5 examples)
+    - Sanity check: model should overfit tiny dataset
+
+    ```python
+    # Sanity check: train on 5 examples
+    tiny_dataset = dataset.select(range(5))
+    # Should achieve near-perfect reward
+    ```
+  </div>
+</div>
+
+## Debugging Checklist
+
+Before opening a GitHub issue, verify:
+
+- [ ] Reward function returns non-zero values for test inputs
+- [ ] Temperature > 0 (typically 0.8-1.5)
+- [ ] Learning rate reasonable (1e-7 to 5e-6)
+- [ ] Enough VRAM for num_generations setting
+- [ ] Data loads correctly (print first batch)
+- [ ] Model can overfit tiny dataset (5 examples)
+- [ ] Validation set separate from training
+- [ ] Wandb/logging configured
+- [ ] Tried different random seeds
+
+## Quick Reference: Parameter Ranges
+
+| Parameter | Recommended Range | Default | Notes |
+|-----------|------------------|---------|-------|
+| `learning_rate` | 1e-7 to 5e-6 | 5e-6 | Lower if NaN loss |
+| `temperature` | 0.8 to 1.5 | 1.0 | Higher = more exploration |
+| `num_generations` | 4 to 32 | 8 | Higher = better estimates, more VRAM |
+| `kl_coef` | 0.01 to 0.2 | 0.05 | Higher = stay closer to base model |
+| `gradient_accumulation_steps` | 1 to 32 | 4 | Increase if OOM |
+
+## Getting Help
+
+If you're still stuck:
+
+1. **Check Examples:** Review [Example 1](/docs/reinforcement-ai/examples/example-1) through [Example 9](/docs/reinforcement-ai/examples/example-9)
+2. **TRL Issues:** [github.com/huggingface/trl/issues](https://github.com/huggingface/trl/issues)
+3. **Unsloth Discord:** Active community for implementation help
+4. **Share Details:** When asking for help, include:
+   - Model size
+   - Hardware (GPU type, VRAM)
+   - Full config
+   - Error message
+   - Wandb/logs
+
+## Next Steps
+
+- [Training Optimization](/docs/reinforcement-ai/training/optimization) - Hyperparameter tuning and memory optimization
+- [Production Guide](/docs/reinforcement-ai/advanced/production) - Taking models to production
+- [Case Studies](/docs/reinforcement-ai/advanced/case-studies) - Real-world examples

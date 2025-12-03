@@ -1,0 +1,18 @@
+{
+  "title": "Reinforcement Learning",
+  "description": "Deep dive into RL, agents, and AI training",
+  "icon": "Brain",
+  "root": true,
+  "pages": [
+    "---Getting Started---",
+    "index",
+    "...introduction",
+    "---Core Concepts---",
+    "...fundamentals",
+    "...training",
+    "---Hands-On Examples---",
+    "...examples",
+    "---Advanced Topics---",
+    "...advanced"
+  ]
+}

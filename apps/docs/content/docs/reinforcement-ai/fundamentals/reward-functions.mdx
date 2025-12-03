@@ -1,0 +1,250 @@
+---
+title: Reward Function Patterns
+description: Six proven patterns for designing effective reward functions
+icon: Award
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## The Art of Reward Design
+
+Reward functions are the heart of reinforcement learning. They define what "good" means and guide the model's learning. Here are six proven patterns you can use:
+
+## Pattern 1: Binary Correctness
+
+**Use case:** Math problems, factual questions, code verification
+
+**How it works:** Simple right/wrong scoring
+
+```python
+def binary_correctness_reward(outputs, correct_answers):
+    rewards = []
+    for output, correct in zip(outputs, correct_answers):
+        if output.strip() == correct.strip():
+            reward = +1.0  # Correct
+        else:
+            reward = -1.0  # Wrong
+        rewards.append(reward)
+    return rewards
+```
+
+**Pros:** Simple, clear signal
+**Cons:** No nuance, doesn't reward partial progress
+
+## Pattern 2: Graduated Proximity
+
+**Use case:** Numerical answers, quantitative predictions
+
+**How it works:** Reward based on how close the answer is
+
+```python
+def graduated_proximity_reward(outputs, correct_answers):
+    rewards = []
+    for output, correct in zip(outputs, correct_answers):
+        try:
+            predicted = float(extract_number(output))
+            actual = float(correct)
+            error = abs(predicted - actual) / abs(actual)
+
+            if error == 0:
+                reward = +3.0  # Perfect
+            elif error < 0.1:
+                reward = +2.0  # Within 10%
+            elif error < 0.25:
+                reward = +1.0  # Within 25%
+            else:
+                reward = -1.0  # Too far
+        except:
+            reward = -2.0  # Invalid
+
+        rewards.append(reward)
+    return rewards
+```
+
+**Pros:** Encourages "getting warmer", faster learning
+**Cons:** Requires numerical answers
+
+## Pattern 3: Multi-Metric Weighted
+
+**Use case:** Complex objectives with multiple criteria
+
+**How it works:** Combine multiple scores with weights
+
+```python
+def multi_metric_reward(outputs):
+    rewards = []
+    for output in outputs:
+        # Calculate individual metrics
+        sentiment_score = get_sentiment(output)  # -1 to +1
+        length_score = score_length(output, target=60)  # -1 to +1
+        diversity_score = calculate_diversity(output)  # 0 to +1
+
+        # Weighted combination
+        reward = (
+            0.4 * sentiment_score +
+            0.3 * length_score +
+            0.3 * diversity_score
+        )
+        rewards.append(reward)
+    return rewards
+```
+
+**Pros:** Balances multiple objectives
+**Cons:** Requires tuning weights
+
+## Pattern 4: LLM-as-Judge
+
+**Use case:** Open-ended tasks, creative writing, reasoning
+
+**How it works:** Use another LLM to score outputs
+
+```python
+def llm_judge_reward(prompts, outputs):
+    rewards = []
+    judge_prompt_template = """
+    Rate the following response on a scale of 1-10:
+
+    Question: {question}
+    Response: {response}
+
+    Consider: accuracy, helpfulness, clarity
+    Return only a number 1-10.
+    """
+
+    for prompt, output in zip(prompts, outputs):
+        judge_prompt = judge_prompt_template.format(
+            question=prompt,
+            response=output
+        )
+        score = judge_llm.generate(judge_prompt)
+        reward = (float(score) - 5.5) / 2.0  # Normalize to ~-2 to +2
+        rewards.append(reward)
+    return rewards
+```
+
+**Pros:** Handles complex, subjective criteria
+**Cons:** Expensive, slower, judge model biases
+
+## Pattern 5: Rule-Based Constraints
+
+**Use case:** Format compliance, safety, style guidelines
+
+**How it works:** Explicit rules with bonuses/penalties
+
+```python
+def rule_based_reward(outputs):
+    rewards = []
+    for output in outputs:
+        reward = 0.0
+
+        # Length constraints
+        word_count = len(output.split())
+        if 20 <= word_count <= 100:
+            reward += 1.0
+        elif word_count < 10 or word_count > 200:
+            reward -= 1.0
+
+        # Format rules
+        if output[0].isupper():  # Starts with capital
+            reward += 0.2
+        if output.endswith(('.', '!', '?')):  # Proper ending
+            reward += 0.2
+
+        # Content rules
+        if any(word in output.lower() for word in banned_words):
+            reward -= 3.0  # Heavy penalty
+
+        # Positive indicators
+        if has_proper_citations(output):
+            reward += 0.5
+
+        rewards.append(reward)
+    return rewards
+```
+
+**Pros:** Explicit control, interpretable
+**Cons:** Brittle, hard to cover all cases
+
+## Pattern 6: Hybrid Verifiable + Quality
+
+**Use case:** Reasoning tasks (like O1/R1)
+
+**How it works:** Combine correctness verification with process quality
+
+```python
+def hybrid_reward(prompts, outputs, correct_answers):
+    rewards = []
+    for prompt, output, correct in zip(prompts, outputs, correct_answers):
+        # Component 1: Correctness (verifiable)
+        is_correct = verify_answer(output, correct)
+        correctness_reward = 3.0 if is_correct else -1.0
+
+        # Component 2: Process quality
+        has_reasoning = "Let me think" in output or "Step" in output
+        reasoning_reward = 0.5 if has_reasoning else 0.0
+
+        # Component 3: Clarity
+        clarity_reward = score_clarity(output)  # 0 to 1
+
+        # Combine (correctness is most important)
+        reward = correctness_reward + reasoning_reward + clarity_reward
+        rewards.append(reward)
+    return rewards
+```
+
+**Pros:** Best of both worlds - objective + subjective
+**Cons:** Complex to tune
+
+## Reward Function Design Principles
+
+<Cards>
+  <Card title="Clear Signal">
+    Make rewards unambiguous - the model should know when it's doing well
+  </Card>
+  <Card title="Appropriate Scale">
+    Use consistent ranges (e.g., -3 to +3) and normalize when combining metrics
+  </Card>
+  <Card title="Reward Progress">
+    Give partial credit for improvements, not just perfection
+  </Card>
+  <Card title="Avoid Reward Hacking">
+    Test for edge cases where the model might "game" your reward function
+  </Card>
+</Cards>
+
+## Common Pitfalls
+
+<Callout type="warn" title="Watch Out For">
+  **Sparse Rewards:** All zeros until perfect - model can't learn
+
+  **Reward Hacking:** Model finds shortcuts (e.g., outputting "hello" repeatedly)
+
+  **Conflicting Signals:** Multi-metric rewards that contradict each other
+
+  **Scale Mismatch:** One metric dominates because it has larger values
+</Callout>
+
+## Choosing the Right Pattern
+
+| Task Type | Recommended Pattern | Example |
+|-----------|-------------------|---------|
+| Math/Code | Binary or Graduated | Pattern 1 or 2 |
+| Essay/Creative | LLM-as-Judge | Pattern 4 |
+| Multi-objective | Multi-Metric | Pattern 3 |
+| Safety-critical | Rule-Based | Pattern 5 |
+| Reasoning | Hybrid | Pattern 6 |
+
+## Next Steps
+
+<Cards>
+  <Card href="/docs/reinforcement-ai/examples/example-1" title="Try Sentiment Reward" icon="Smile">
+    Pattern 4 in action
+  </Card>
+  <Card href="/docs/reinforcement-ai/examples/example-2" title="Try Math Verifier" icon="Calculator">
+    Pattern 2 in action
+  </Card>
+  <Card href="/docs/reinforcement-ai/examples/example-4" title="Try Multi-Metric" icon="Layers">
+    Pattern 3 in action
+  </Card>
+</Cards>

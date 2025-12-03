@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="#0f172a"/>
+  <text x="600" y="40" font-size="26" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Proximity Scoring Heatmap</text>
+
+  <!-- Legend -->
+  <rect x="900" y="100" width="250" height="200" fill="#1e293b" stroke="#334155" stroke-width="2" rx="8"/>
+  <text x="1025" y="130" font-size="14" fill="#e2e8f0" font-weight="bold" text-anchor="middle">Reward Scale</text>
+  <rect x="920" y="145" width="80" height="25" fill="#10b981"/>
+  <text x="1010" y="162" font-size="12" fill="#cbd5e1">3.0: Perfect</text>
+  <rect x="920" y="175" width="80" height="25" fill="#fbbf24"/>
+  <text x="1010" y="192" font-size="12" fill="#cbd5e1">2.5: Within tol</text>
+  <rect x="920" y="205" width="80" height="25" fill="#f59e0b"/>
+  <text x="1010" y="222" font-size="12" fill="#cbd5e1">1.0: Close</text>
+  <rect x="920" y="235" width="80" height="25" fill="#ef4444"/>
+  <text x="1010" y="252" font-size="12" fill="#cbd5e1">-1.0: Far</text>
+
+  <!-- Heatmap grid -->
+  <rect x="100" y="130" width="700" height="50" fill="#1e293b" stroke="#334155" stroke-width="2" rx="8"/>
+  <text x="450" y="162" font-size="14" fill="#e2e8f0" font-weight="bold" text-anchor="middle">Distance from Correct Answer</text>
+
+  <!-- Scoring examples -->
+  <rect x="100" y="200" width="140" height="80" fill="#10b981" stroke="#34d399" stroke-width="2" rx="6"/>
+  <text x="170" y="235" font-size="14" fill="white" font-weight="bold" text-anchor="middle">Exact (0%)</text>
+  <text x="170" y="260" font-size="18" fill="white" text-anchor="middle">3.0</text>
+
+  <rect x="260" y="200" width="140" height="80" fill="#10b981" stroke="#34d399" stroke-width="2" rx="6"/>
+  <text x="330" y="235" font-size="14" fill="white" font-weight="bold" text-anchor="middle">5%</text>
+  <text x="330" y="260" font-size="18" fill="white" text-anchor="middle">2.8</text>
+
+  <rect x="420" y="200" width="140" height="80" fill="#fbbf24" stroke="#f59e0b" stroke-width="2" rx="6"/>
+  <text x="490" y="235" font-size="14" fill="white" font-weight="bold" text-anchor="middle">10%</text>
+  <text x="490" y="260" font-size="18" fill="white" text-anchor="middle">2.5</text>
+
+  <rect x="580" y="200" width="140" height="80" fill="#f59e0b" stroke="#d97706" stroke-width="2" rx="6"/>
+  <text x="650" y="235" font-size="14" fill="white" font-weight="bold" text-anchor="middle">20%</text>
+  <text x="650" y="260" font-size="18" fill="white" text-anchor="middle">1.5</text>
+
+  <rect x="100" y="300" width="140" height="80" fill="#f97316" stroke="#ea580c" stroke-width="2" rx="6"/>
+  <text x="170" y="335" font-size="14" fill="white" font-weight="bold" text-anchor="middle">30%</text>
+  <text x="170" y="360" font-size="18" fill="white" text-anchor="middle">0.8</text>
+
+  <rect x="260" y="300" width="140" height="80" fill="#dc2626" stroke="#b91c1c" stroke-width="2" rx="6"/>
+  <text x="330" y="335" font-size="14" fill="white" font-weight="bold" text-anchor="middle">50%</text>
+  <text x="330" y="360" font-size="18" fill="white" text-anchor="middle">0.2</text>
+
+  <rect x="420" y="300" width="300" height="80" fill="#7f1d1d" stroke="#991b1b" stroke-width="2" rx="6"/>
+  <text x="570" y="335" font-size="14" fill="white" font-weight="bold" text-anchor="middle">100% (way off)</text>
+  <text x="570" y="360" font-size="18" fill="white" text-anchor="middle">-1.0</text>
+
+  <!-- Formula -->
+  <rect x="100" y="420" width="700" height="240" fill="#1e293b" stroke="#10b981" stroke-width="2" rx="8"/>
+  <text x="450" y="455" font-size="16" fill="#10b981" font-weight="bold" text-anchor="middle">Exponential Decay Formula</text>
+  <text x="130" y="495" font-size="13" fill="#cbd5e1">Within tolerance (linear):</text>
+  <text x="150" y="520" font-size="12" fill="#94a3b8" font-family="monospace">reward = 2.5 + 0.5  (1 - distance/tolerance)</text>
+  <text x="130" y="565" font-size="13" fill="#cbd5e1">Outside tolerance (exponential decay):</text>
+  <text x="150" y="590" font-size="12" fill="#94a3b8" font-family="monospace">pct_error = distance / |actual|</text>
+  <text x="150" y="615" font-size="12" fill="#94a3b8" font-family="monospace">reward = max(-1.0, 2.5  e^(-pct_error/0.2))</text>
+</svg>

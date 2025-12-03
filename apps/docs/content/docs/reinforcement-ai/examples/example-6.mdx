@@ -1,0 +1,293 @@
+---
+title: 'Example 6: Custom Tag Systems'
+description: Train models to use XML-style tags for structured outputs
+icon: Tags
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<div className="flex items-center justify-between mb-6">
+  <div className="text-3xl font-bold text-cyan-500">Example 6: Custom Tag Systems</div>
+  <div className="px-4 py-2 rounded-full bg-cyan-500 text-white font-bold">
+    ⏱️ 30 minutes
+  </div>
+</div>
+
+**Goal:** Train models to use custom XML-style tags for structured outputs (like DeepSeek R1's thinking tokens).
+
+## For Non-Technical People
+
+<Callout type="info">
+  Imagine teaching someone to always "show their work" on math tests by writing their reasoning in one section and their final answer in another. This example teaches the AI to organize its thoughts using special tags, making its responses more transparent and structured!
+
+  **Real-world use cases:** Reasoning models, structured data extraction, API responses, documentation generation, debugging AI decisions.
+</Callout>
+
+![Prompt Engineering Flow](/reinforcement-ai/24-prompt-engineering-flow.svg)
+
+## For Technical People
+
+<div className="p-6 rounded-lg bg-cyan-500/10 border-l-4 border-cyan-500 my-6">
+  <div className="mb-4">
+    We implement a reward function that validates XML-like tag structure using regex matching. This approach mirrors how reasoning models like OpenAI's O1 and DeepSeek's R1 were trained to produce structured thinking traces. The reward function checks both tag presence and content quality.
+  </div>
+  <div>
+    <strong>Technical Details:</strong>
+    <ul className="mt-2 ml-4 list-disc">
+      <li><strong>Tag Validation:</strong> Regex pattern matching for thinking and answer tags</li>
+      <li><strong>Order Checking:</strong> Reward correct sequential structure</li>
+      <li><strong>Content Quality:</strong> Bonus for multi-sentence reasoning and concise answers</li>
+      <li><strong>Application:</strong> Enables post-processing, reasoning extraction, and interpretability</li>
+    </ul>
+  </div>
+</div>
+
+## System Prompt Setup
+
+First, define a system prompt that instructs the model to use tags:
+
+```python
+SYSTEM_PROMPT = """You are a reasoning AI. Always structure your responses as:
+
+<thinking>
+Your step-by-step reasoning process
+</thinking>
+
+<answer>
+Your final answer
+</answer>"""
+```
+
+## Complete Python Implementation
+
+```python title="example6_custom_tags.py"
+import re
+from datasets import Dataset
+
+# Training data
+training_data = [
+    {"prompt": "What is the capital of France?"},
+    {"prompt": "Solve: 15 + 27"},
+    {"prompt": "Who invented the telephone?"},
+    {"prompt": "What is photosynthesis?"},
+    {"prompt": "When did World War II end?"},
+    {"prompt": "What causes rain?"},
+    {"prompt": "Why is the sky blue?"},
+    {"prompt": "How many continents are there?"},
+]
+
+dataset = Dataset.from_list(training_data)
+
+def custom_tag_reward(prompts, outputs, **kwargs):
+    """
+    Rewards proper use of custom XML tags for structured output.
+
+    Scoring:
+    - Both tags present and properly formatted: +3.0
+    - Tags present but malformed: +1.5
+    - Only one tag: +0.5
+    - No tags: -1.0
+    - Content quality bonus: up to +0.7
+    """
+    rewards = []
+
+    for output in outputs:
+        reward = 0.0
+
+        # Check for <thinking> tag
+        thinking_match = re.search(r'<thinking>(.*?)</thinking>', output, re.DOTALL)
+        has_thinking = thinking_match is not None
+
+        # Check for <answer> tag
+        answer_match = re.search(r'<answer>(.*?)</answer>', output, re.DOTALL)
+        has_answer = answer_match is not None
+
+        # BASE REWARD: Tag presence
+        if has_thinking and has_answer:
+            reward = 3.0  # Perfect structure
+
+            # BONUS: Check tag order (thinking before answer)
+            thinking_pos = output.find('<thinking>')
+            answer_pos = output.find('<answer>')
+            if thinking_pos < answer_pos:
+                reward += 0.3  # Correct order
+
+            # BONUS: Check content quality
+            thinking_content = thinking_match.group(1).strip()
+            answer_content = answer_match.group(1).strip()
+
+            # Thinking should have reasoning (multiple sentences)
+            thinking_sentences = thinking_content.count('.') + thinking_content.count('!')
+            if thinking_sentences >= 2:
+                reward += 0.2  # Good reasoning
+
+            # Answer should be concise
+            answer_words = len(answer_content.split())
+            if 5 <= answer_words <= 30:
+                reward += 0.2  # Concise answer
+
+        elif has_thinking or has_answer:
+            reward = 1.0  # Partial credit
+        else:
+            reward = -1.0  # No structure
+
+        rewards.append(reward)
+
+    return rewards
+
+# Test examples
+print("Testing Custom Tag Reward:\n")
+
+test_cases = [
+    # Perfect structure
+    """<thinking>
+The user asks for the capital of France. This is a well-known fact. The capital is Paris, which has been the capital since the 12th century.
+</thinking>
+
+<answer>
+Paris
+</answer>""",
+    # Missing thinking tag
+    """<answer>
+Paris
+</answer>""",
+    # Wrong order
+    """<answer>
+Paris
+</answer>
+
+<thinking>
+The capital is Paris.
+</thinking>""",
+    # No tags
+    "The capital of France is Paris.",
+]
+
+for i, test_output in enumerate(test_cases, 1):
+    reward = custom_tag_reward([""], [test_output])[0]
+    print(f"Test Case {i}:")
+    print(f"Reward: {reward:.2f}")
+    print()
+
+# Training configuration
+from trl import GRPOConfig, GRPOTrainer
+
+config = GRPOConfig(
+    output_dir = "./custom_tag_model",
+    num_train_epochs = 3,
+    per_device_train_batch_size = 1,
+    gradient_accumulation_steps = 4,
+    num_generations = 8,
+    learning_rate = 5e-6,
+    temperature = 1.0,
+)
+
+trainer = GRPOTrainer(
+    model = model,
+    args = config,
+    train_dataset = dataset,
+    reward_function = custom_tag_reward,
+    tokenizer = tokenizer,
+    # Add system prompt to every input
+    processing_class = tokenizer,
+)
+
+print("Training model to use custom tags...")
+trainer.train()
+print("Model now produces structured outputs!")
+```
+
+## Expected Training Progression
+
+### Before Training:
+```
+User: What is 2+2?
+Model: The answer is 4, which is the sum of two and two.
+```
+
+### After Training:
+```
+User: What is 2+2?
+Model: <thinking>
+The user wants me to add 2 and 2. This is basic arithmetic.
+2 + 2 = 4
+</thinking>
+
+<answer>
+4
+</answer>
+```
+
+## Reward Breakdown
+
+| Output Structure | Base Reward | Order Bonus | Quality Bonus | Total |
+|------------------|-------------|-------------|---------------|-------|
+| Both tags, correct order, good content | +3.0 | +0.3 | +0.4 | +3.7 |
+| Both tags, wrong order | +3.0 | 0 | 0 | +3.0 |
+| One tag only | +1.0 | 0 | 0 | +1.0 |
+| No tags | -1.0 | 0 | 0 | -1.0 |
+
+## Advanced: Multiple Tag Types
+
+You can extend this to support multiple tag types:
+
+```python
+# System prompt with multiple tags
+ADVANCED_PROMPT = """Structure responses as:
+
+<thinking>Step-by-step reasoning</thinking>
+<answer>Final answer</answer>
+<confidence>High/Medium/Low</confidence>
+<sources>Relevant sources</sources>"""
+
+def multi_tag_reward(prompts, outputs, **kwargs):
+    """Reward function for multiple tag types"""
+    required_tags = ['thinking', 'answer', 'confidence', 'sources']
+    rewards = []
+
+    for output in outputs:
+        # Check each required tag
+        found_tags = sum(
+            1 for tag in required_tags
+            if re.search(f'<{tag}>.*?</{tag}>', output, re.DOTALL)
+        )
+
+        # Reward proportional to tags found
+        reward = (found_tags / len(required_tags)) * 3.0 - 1.0
+        rewards.append(reward)
+
+    return rewards
+```
+
+## Key Takeaway
+
+<Callout title="Key Takeaway">
+  Custom tag systems enable structured, interpretable AI outputs. This technique is fundamental to reasoning models like O1 and R1. By rewarding structured responses, you gain transparency into the model's decision-making process and enable easier post-processing.
+</Callout>
+
+## Real-World Applications
+
+### 1. Reasoning Models
+DeepSeek R1 style thinking traces for transparency
+
+### 2. API Responses
+```xml
+<status>success</status>
+<data>{"key": "value"}</data>
+<error>null</error>
+```
+
+### 3. Data Extraction
+```xml
+<person>
+  <name>John Doe</name>
+  <age>30</age>
+  <location>New York</location>
+</person>
+```
+
+## Next Steps
+
+- [Example 7: vLLM Integration](/docs/reinforcement-ai/examples/example-7) - Production inference optimization
+- [Production Deployment](/docs/reinforcement-ai/advanced/production) - Taking models to production
+- [Training Debugging](/docs/reinforcement-ai/training/debugging) - Troubleshooting training issues

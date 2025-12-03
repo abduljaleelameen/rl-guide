@@ -1,0 +1,578 @@
+---
+title: Production Deployment
+description: Best practices for deploying RL models to production
+icon: Rocket
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## Production Deployment Guide
+
+Taking your RL-trained model from experiment to production requires careful planning, testing, and infrastructure. This guide covers everything you need.
+
+## Pre-Deployment Checklist
+
+Before deploying any model to production:
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+  <div>
+    ### Model Quality
+    - [ ] Validation reward > baseline by 20%+
+    - [ ] Tested on 1000+ held-out examples
+    - [ ] Manual review of 100+ outputs
+    - [ ] Red team testing for edge cases
+    - [ ] Adversarial prompt testing
+    - [ ] Safety filter testing
+  </div>
+
+  <div>
+    ### Infrastructure
+    - [ ] Model served via vLLM or similar
+    - [ ] Load testing (1000 req/s)
+    - [ ] Latency p99 < 2 seconds
+    - [ ] Monitoring dashboards configured
+    - [ ] Automated rollback tested
+    - [ ] Incident response plan documented
+  </div>
+</div>
+
+## Deployment Strategy
+
+<Steps>
+  <Step>
+    ### 1. Benchmark Testing
+
+    Test your model against baseline on multiple metrics:
+
+    ```python
+    from datasets import load_dataset
+
+    def comprehensive_evaluation(model, baseline_model, test_data):
+        """Compare models across multiple dimensions"""
+        results = {
+            'accuracy': [],
+            'latency': [],
+            'token_count': [],
+            'reward': [],
+        }
+
+        for example in test_data:
+            # Test candidate model
+            start = time.time()
+            output = model.generate(example['prompt'])
+            latency = time.time() - start
+
+            # Calculate metrics
+            reward = reward_function([example['prompt']], [output])[0]
+            accuracy = check_correctness(output, example['answer'])
+
+            results['accuracy'].append(accuracy)
+            results['latency'].append(latency)
+            results['token_count'].append(len(output.split()))
+            results['reward'].append(reward)
+
+        # Summary statistics
+        return {
+            'avg_accuracy': np.mean(results['accuracy']),
+            'p99_latency': np.percentile(results['latency'], 99),
+            'avg_reward': np.mean(results['reward']),
+        }
+
+    # Run evaluation
+    test_set = load_dataset('your_test_set')
+    metrics = comprehensive_evaluation(trained_model, baseline_model, test_set)
+
+    print(f"Accuracy: {metrics['avg_accuracy']:.1%}")
+    print(f"P99 Latency: {metrics['p99_latency']:.2f}s")
+    print(f"Avg Reward: {metrics['avg_reward']:.2f}")
+
+    # Only proceed if all metrics improved
+    assert metrics['avg_accuracy'] > baseline_metrics['avg_accuracy']
+    assert metrics['p99_latency'] < 2.0  # Latency SLA
+    ```
+  </Step>
+
+  <Step>
+    ### 2. Canary Deployment
+
+    Deploy to small percentage of traffic first:
+
+    ```python
+    class CanaryDeployment:
+        def __init__(self, baseline_url, candidate_url, initial_traffic=0.05):
+            self.baseline_url = baseline_url
+            self.candidate_url = candidate_url
+            self.canary_percentage = initial_traffic
+            self.metrics = {'baseline': [], 'candidate': []}
+
+        def route_request(self, prompt):
+            """Route traffic based on canary percentage"""
+            import random
+
+            use_candidate = random.random() < self.canary_percentage
+
+            if use_candidate:
+                response = self.call_model(self.candidate_url, prompt)
+                model_version = "candidate"
+            else:
+                response = self.call_model(self.baseline_url, prompt)
+                model_version = "baseline"
+
+            # Log metrics
+            self.log_metrics(model_version, response)
+
+            return response
+
+        def increase_traffic(self, new_percentage):
+            """Gradually increase canary traffic"""
+            if self.metrics_look_good():
+                print(f"Increasing canary traffic: {self.canary_percentage:.0%} → {new_percentage:.0%}")
+                self.canary_percentage = new_percentage
+            else:
+                print("⚠️ Metrics degraded, keeping current traffic")
+
+        def metrics_look_good(self):
+            """Check if candidate is performing well"""
+            if len(self.metrics['candidate']) < 100:
+                return False  # Need more data
+
+            candidate_reward = np.mean(self.metrics['candidate'][-100:])
+            baseline_reward = np.mean(self.metrics['baseline'][-100:])
+
+            # Candidate must be at least as good
+            return candidate_reward >= baseline_reward * 0.95
+
+    # Gradual rollout schedule
+    deployment = CanaryDeployment(baseline, candidate, initial_traffic=0.05)
+
+    # Week 1: 5% traffic
+    run_for_duration(days=2)
+    if deployment.metrics_look_good():
+        deployment.increase_traffic(0.25)
+
+    # Week 2: 25% traffic
+    run_for_duration(days=2)
+    if deployment.metrics_look_good():
+        deployment.increase_traffic(0.50)
+
+    # Week 3: 50% traffic
+    run_for_duration(days=2)
+    if deployment.metrics_look_good():
+        deployment.increase_traffic(1.00)
+
+    # Week 4: Full rollout
+    ```
+  </Step>
+
+  <Step>
+    ### 3. Monitoring Setup
+
+    Track key metrics in real-time:
+
+    ```python
+    import prometheus_client
+    from prometheus_client import Counter, Histogram, Gauge
+
+    # Define metrics
+    request_total = Counter(
+        'model_requests_total',
+        'Total requests by model and status',
+        ['model_version', 'status']
+    )
+
+    request_latency = Histogram(
+        'model_latency_seconds',
+        'Request latency in seconds',
+        ['model_version'],
+        buckets=[0.1, 0.5, 1.0, 2.0, 5.0]
+    )
+
+    reward_gauge = Gauge(
+        'model_reward_rolling_avg',
+        'Rolling average reward',
+        ['model_version']
+    )
+
+    # Track every request
+    def track_request(model_version, prompt, response, reward):
+        # Count requests
+        status = "success" if response else "error"
+        request_total.labels(
+            model_version=model_version,
+            status=status
+        ).inc()
+
+        # Track latency
+        request_latency.labels(
+            model_version=model_version
+        ).observe(response.latency_seconds)
+
+        # Track reward
+        reward_gauge.labels(
+            model_version=model_version
+        ).set(reward)
+
+        # Alert if degradation
+        if reward < threshold:
+            send_alert(f"⚠️ Reward dropped to {reward:.2f}")
+
+    # Start Prometheus endpoint
+    prometheus_client.start_http_server(9090)
+    ```
+
+    **Grafana Dashboard Setup:**
+    - Request rate by model version
+    - Latency p50/p95/p99
+    - Rolling average reward
+    - Error rate
+    - Token usage
+  </Step>
+
+  <Step>
+    ### 4. Automated Rollback
+
+    Implement watchdog for automatic rollback:
+
+    ```python
+    class AutoRollback:
+        def __init__(self, thresholds):
+            self.thresholds = thresholds
+            self.alert_webhook = os.getenv('SLACK_WEBHOOK')
+
+        def monitor(self, metrics):
+            """Check metrics and rollback if needed"""
+            should_rollback = False
+            reasons = []
+
+            # Check reward degradation
+            if metrics['candidate_reward'] < metrics['baseline_reward'] * 0.9:
+                should_rollback = True
+                reasons.append("Reward dropped 10%+")
+
+            # Check error rate
+            if metrics['error_rate'] > 0.01:  # 1%
+                should_rollback = True
+                reasons.append(f"Error rate: {metrics['error_rate']:.1%}")
+
+            # Check latency
+            if metrics['p99_latency'] > 2.0:
+                should_rollback = True
+                reasons.append(f"P99 latency: {metrics['p99_latency']:.2f}s")
+
+            if should_rollback:
+                self.execute_rollback(reasons)
+
+        def execute_rollback(self, reasons):
+            """Immediate rollback to baseline"""
+            print("🚨 EXECUTING AUTOMATED ROLLBACK")
+            print(f"Reasons: {', '.join(reasons)}")
+
+            # Update traffic routing
+            update_traffic_split(candidate_percentage=0.0)
+
+            # Alert team
+            self.send_alert(
+                title="Automated Rollback Executed",
+                severity="critical",
+                reasons=reasons
+            )
+
+            # Log incident
+            log_incident({
+                'timestamp': datetime.now(),
+                'type': 'automated_rollback',
+                'reasons': reasons,
+                'metrics': current_metrics,
+            })
+
+    # Run watchdog
+    rollback = AutoRollback(thresholds={
+        'reward_drop': 0.1,
+        'max_error_rate': 0.01,
+        'max_latency': 2.0,
+    })
+
+    while True:
+        metrics = get_current_metrics()
+        rollback.monitor(metrics)
+        time.sleep(60)  # Check every minute
+    ```
+  </Step>
+</Steps>
+
+## Serving Infrastructure
+
+### vLLM Production Setup
+
+For optimal inference performance:
+
+```bash
+# Production vLLM server
+docker run --gpus all \
+  -p 8000:8000 \
+  vllm/vllm-openai:latest \
+  --model /path/to/model \
+  --dtype bfloat16 \
+  --max-model-len 4096 \
+  --gpu-memory-utilization 0.9 \
+  --tensor-parallel-size 4 \
+  --max-num-seqs 256 \
+  --disable-log-requests \
+  --trust-remote-code
+```
+
+**Configuration Guidelines:**
+- `max-num-seqs`: Set to 256+ for high throughput
+- `gpu-memory-utilization`: 0.9 for production (0.8 for safety)
+- `tensor-parallel-size`: Number of GPUs
+- `max-model-len`: Adjust based on typical prompt length
+
+### Load Balancing
+
+Use multiple vLLM instances behind load balancer:
+
+```yaml
+# kubernetes deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-deployment
+spec:
+  replicas: 4  # Scale based on traffic
+  template:
+    spec:
+      containers:
+      - name: vllm
+        image: vllm/vllm-openai:latest
+        resources:
+          limits:
+            nvidia.com/gpu: 2
+        env:
+        - name: MODEL_NAME
+          value: "your-model"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8000
+  selector:
+    app: vllm
+```
+
+## Monitoring & Alerting
+
+<Cards>
+  <Card title="Critical Alerts" icon="AlertTriangle">
+    **Immediate Response Required:**
+    - Error rate > 1%
+    - P99 latency > 2s
+    - Reward drop > 10%
+    - GPU OOM errors
+    - Service downtime
+
+    **Action:** Page on-call engineer
+  </Card>
+
+  <Card title="Warning Alerts" icon="AlertCircle">
+    **Monitor Closely:**
+    - Error rate > 0.5%
+    - P95 latency > 1s
+    - Reward drop > 5%
+    - Token usage spike
+
+    **Action:** Slack notification
+  </Card>
+
+  <Card title="Informational" icon="Info">
+    **Good to Know:**
+    - Traffic patterns
+    - User feedback trends
+    - Cost tracking
+    - Model version distribution
+
+    **Action:** Daily email digest
+  </Card>
+</Cards>
+
+## Cost Optimization
+
+### 1. Batch Requests
+
+Group requests for efficiency:
+
+```python
+class BatchProcessor:
+    def __init__(self, max_batch_size=32, max_wait_ms=100):
+        self.max_batch_size = max_batch_size
+        self.max_wait_ms = max_wait_ms
+        self.queue = []
+
+    async def add_request(self, prompt):
+        """Add request to batch queue"""
+        future = asyncio.Future()
+        self.queue.append((prompt, future))
+
+        # Process when batch full or timeout
+        if len(self.queue) >= self.max_batch_size:
+            await self.process_batch()
+
+        return await future
+
+    async def process_batch(self):
+        """Process accumulated requests"""
+        if not self.queue:
+            return
+
+        prompts = [item[0] for item in self.queue]
+        futures = [item[1] for item in self.queue]
+
+        # Batch inference
+        responses = await vllm_batch_generate(prompts)
+
+        # Return results
+        for future, response in zip(futures, responses):
+            future.set_result(response)
+
+        self.queue.clear()
+```
+
+### 2. Auto-Scaling
+
+Scale based on traffic:
+
+```python
+# Kubernetes HPA
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: vllm-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: vllm-deployment
+  minReplicas: 2
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Pods
+    pods:
+      metric:
+        name: requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "100"
+```
+
+## Security Considerations
+
+<Callout type="warn" title="Security Checklist">
+  - [ ] Input sanitization for prompts
+  - [ ] Rate limiting per user/IP
+  - [ ] Content filtering for outputs
+  - [ ] Audit logging for compliance
+  - [ ] Model weight encryption at rest
+  - [ ] API authentication (OAuth/JWT)
+  - [ ] Secrets management (no hardcoded keys)
+  - [ ] DDoS protection
+</Callout>
+
+### Input Sanitization
+
+```python
+def sanitize_prompt(prompt):
+    """Sanitize user input"""
+    # Length limits
+    if len(prompt) > 4096:
+        raise ValueError("Prompt too long")
+
+    # Remove control characters
+    prompt = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', prompt)
+
+    # Check for injection attempts
+    dangerous_patterns = [
+        r'<script.*?>',
+        r'javascript:',
+        r'on\w+\s*=',  # event handlers
+    ]
+
+    for pattern in dangerous_patterns:
+        if re.search(pattern, prompt, re.IGNORECASE):
+            raise ValueError("Potentially malicious input detected")
+
+    return prompt
+```
+
+## Continuous Improvement
+
+### Weekly Retraining
+
+Continuously improve with fresh data:
+
+```python
+# Weekly retraining schedule
+def weekly_retrain():
+    # Collect last week's data
+    new_data = collect_production_data(days=7)
+
+    # Filter high-quality interactions
+    quality_data = new_data.filter(
+        lambda x: x['user_thumbs_up'] or x['reward'] > 2.5
+    )
+
+    # Combine with existing dataset
+    updated_dataset = concatenate_datasets([
+        existing_dataset,
+        quality_data
+    ])
+
+    # Retrain
+    train_model(updated_dataset)
+
+    # Deploy as new candidate
+    deploy_canary(new_model, traffic=0.05)
+
+# Schedule weekly
+schedule.every().monday.at("02:00").do(weekly_retrain)
+```
+
+## Incident Response Plan
+
+When things go wrong:
+
+1. **Immediate Actions (< 5 minutes)**
+   - Execute automated rollback
+   - Check service health
+   - Notify team
+
+2. **Investigation (< 30 minutes)**
+   - Review logs and metrics
+   - Identify root cause
+   - Document findings
+
+3. **Resolution (< 2 hours)**
+   - Implement fix
+   - Test thoroughly
+   - Redeploy with canary
+
+4. **Post-Mortem (< 1 week)**
+   - Write incident report
+   - Identify prevention measures
+   - Update runbooks
+
+## Next Steps
+
+- [Case Studies](/docs/reinforcement-ai/advanced/case-studies) - Real-world deployment examples
+- [Example 9: Production Pipeline](/docs/reinforcement-ai/examples/example-9) - Complete implementation
+- [Training Optimization](/docs/reinforcement-ai/training/optimization) - Performance tuning

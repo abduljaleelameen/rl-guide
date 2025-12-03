@@ -1,0 +1,9 @@
+{
+  "title": "Training",
+  "icon": "Workflow",
+  "pages": [
+    "stages",
+    "debugging",
+    "optimization"
+  ]
+}

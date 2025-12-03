@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 900">
+  <!-- Background -->
+  <rect width="1400" height="900" fill="#0f172a"/>
+
+  <!-- Title -->
+  <text x="700" y="40" font-size="28" font-weight="bold" fill="#e2e8f0" text-anchor="middle">PPO vs GRPO Comparison</text>
+  <text x="700" y="70" font-size="14" fill="#94a3b8" text-anchor="middle">Why GRPO is Simpler and Faster</text>
+
+  <!-- PPO Section (Left) -->
+  <rect x="50" y="120" width="600" height="700" fill="#1e293b" stroke="#f59e0b" stroke-width="3" rx="12"/>
+  <text x="350" y="160" font-size="22" font-weight="bold" fill="#f59e0b" text-anchor="middle">PPO (Complex)</text>
+
+  <!-- PPO Models -->
+  <rect x="100" y="200" width="500" height="80" fill="#3b82f6" rx="8"/>
+  <text x="350" y="230" font-size="16" font-weight="bold" fill="white" text-anchor="middle">Model 1: Policy Model</text>
+  <text x="350" y="255" font-size="12" fill="#dbeafe" text-anchor="middle">Generates responses + calculates probabilities</text>
+
+  <rect x="100" y="300" width="500" height="80" fill="#8b5cf6" rx="8"/>
+  <text x="350" y="330" font-size="16" font-weight="bold" fill="white" text-anchor="middle">Model 2: Value Model</text>
+  <text x="350" y="355" font-size="12" fill="#ede9fe" text-anchor="middle">Predicts expected rewards</text>
+
+  <rect x="100" y="400" width="500" height="80" fill="#ec4899" rx="8"/>
+  <text x="350" y="430" font-size="16" font-weight="bold" fill="white" text-anchor="middle">Model 3: Reward Model</text>
+  <text x="350" y="455" font-size="12" fill="#fce7f3" text-anchor="middle">Scores response quality</text>
+
+  <!-- PPO Characteristics -->
+  <rect x="100" y="520" width="500" height="260" fill="#0f172a" stroke="#475569" stroke-width="2" rx="8"/>
+  <text x="120" y="555" font-size="14" font-weight="bold" fill="#e2e8f0">Characteristics:</text>
+  <text x="140" y="585" font-size="13" fill="#f87171"> 3 separate models to train</text>
+  <text x="140" y="615" font-size="13" fill="#f87171"> Complex advantage calculation</text>
+  <text x="140" y="645" font-size="13" fill="#f87171"> High memory usage (3x models)</text>
+  <text x="140" y="675" font-size="13" fill="#f87171"> Slow training iterations</text>
+  <text x="140" y="705" font-size="13" fill="#fbbf24"> Requires careful hyperparameter tuning</text>
+  <text x="140" y="735" font-size="13" fill="#10b981"> Industry standard (OpenAI, Anthropic)</text>
+  <text x="140" y="765" font-size="13" fill="#10b981"> Very stable training</text>
+
+  <!-- GRPO Section (Right) -->
+  <rect x="750" y="120" width="600" height="700" fill="#1e293b" stroke="#10b981" stroke-width="3" rx="12"/>
+  <text x="1050" y="160" font-size="22" font-weight="bold" fill="#10b981" text-anchor="middle">GRPO (Simple)</text>
+
+  <!-- GRPO Model -->
+  <rect x="800" y="200" width="500" height="80" fill="#3b82f6" rx="8"/>
+  <text x="1050" y="230" font-size="16" font-weight="bold" fill="white" text-anchor="middle">Model 1: Policy Model</text>
+  <text x="1050" y="255" font-size="12" fill="#dbeafe" text-anchor="middle">Generates responses only</text>
+
+  <text x="1050" y="340" font-size="18" fill="#94a3b8" text-anchor="middle" font-style="italic">That's it! Just 1 model.</text>
+
+  <!-- GRPO Characteristics -->
+  <rect x="800" y="390" width="500" height="390" fill="#0f172a" stroke="#475569" stroke-width="2" rx="8"/>
+  <text x="820" y="425" font-size="14" font-weight="bold" fill="#e2e8f0">Characteristics:</text>
+  <text x="840" y="455" font-size="13" fill="#10b981"> Only 1 model to train</text>
+  <text x="840" y="485" font-size="13" fill="#10b981"> Simple z-score advantage</text>
+  <text x="840" y="515" font-size="13" fill="#10b981"> Low memory usage (1/3 of PPO)</text>
+  <text x="840" y="545" font-size="13" fill="#10b981"> Fast training (3x speedup)</text>
+  <text x="840" y="575" font-size="13" fill="#10b981"> Easy to implement</text>
+  <text x="840" y="605" font-size="13" fill="#10b981"> Used by DeepSeek R1</text>
+  <text x="840" y="635" font-size="13" fill="#fbbf24"> Less proven (newer algorithm)</text>
+  <text x="840" y="665" font-size="13" fill="#fbbf24"> May need more generations per prompt</text>
+
+  <!-- Formula Box -->
+  <rect x="820" y="700" width="460" height="60" fill="#1e293b" stroke="#10b981" stroke-width="2" rx="8"/>
+  <text x="840" y="725" font-size="12" fill="#cbd5e1">Advantage = (reward - mean) / std</text>
+  <text x="840" y="745" font-size="11" fill="#94a3b8">Simple z-score normalization!</text>
+
+  <!-- Bottom Comparison -->
+  <rect x="50" y="850" width="1300" height="40" fill="#10b981" rx="8"/>
+  <text x="700" y="875" font-size="16" font-weight="bold" fill="white" text-anchor="middle"> GRPO: Same performance as PPO, but 3x faster and easier to use!</text>
+
+</svg>

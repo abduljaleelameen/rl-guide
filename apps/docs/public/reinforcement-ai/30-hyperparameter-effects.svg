@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+  <rect width="1200" height="800" fill="#0f172a"/>
+  <text x="600" y="35" font-size="24" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Hyperparameter Effects on Training</text>
+
+  <!-- Learning Rate -->
+  <rect x="50" y="80" width="550" height="150" fill="#1e293b" stroke="#3b82f6" stroke-width="3" rx="10"/>
+  <text x="325" y="115" font-size="18" fill="#3b82f6" font-weight="bold" text-anchor="middle">Learning Rate (LR)</text>
+  <text x="80" y="150" font-size="13" fill="#ef4444"> Too high (1e-4): Unstable, diverges</text>
+  <text x="80" y="175" font-size="13" fill="#10b981"> Just right (1e-6): Smooth convergence </text>
+  <text x="80" y="200" font-size="13" fill="#fbbf24"> Too low (1e-8): Very slow learning</text>
+  <text x="80" y="215" font-size="11" fill="#94a3b8" font-style="italic">Tip: Start with 1e-6 for RL fine-tuning</text>
+
+  <!-- Batch Size -->
+  <rect x="625" y="80" width="550" height="150" fill="#1e293b" stroke="#8b5cf6" stroke-width="3" rx="10"/>
+  <text x="900" y="115" font-size="18" fill="#8b5cf6" font-weight="bold" text-anchor="middle">Batch Size</text>
+  <text x="655" y="150" font-size="13" fill="#ef4444"> Too small (4): Noisy gradients, unstable</text>
+  <text x="655" y="175" font-size="13" fill="#10b981"> Just right (32-128): Stable training </text>
+  <text x="655" y="200" font-size="13" fill="#fbbf24"> Too large (512): Slow, memory hungry</text>
+  <text x="655" y="215" font-size="11" fill="#94a3b8" font-style="italic">Tip: Use gradient accumulation for large effective batches</text>
+
+  <!-- PPO Epochs -->
+  <rect x="50" y="260" width="550" height="150" fill="#1e293b" stroke="#10b981" stroke-width="3" rx="10"/>
+  <text x="325" y="295" font-size="18" fill="#10b981" font-weight="bold" text-anchor="middle">PPO Epochs</text>
+  <text x="80" y="330" font-size="13" fill="#fbbf24"> Too few (1-2): Underutilizes data</text>
+  <text x="80" y="355" font-size="13" fill="#10b981"> Just right (4-10): Good data efficiency </text>
+  <text x="80" y="380" font-size="13" fill="#ef4444"> Too many (&gt;20): Overfitting, mode collapse</text>
+  <text x="80" y="395" font-size="11" fill="#94a3b8" font-style="italic">Tip: Monitor KL divergence to detect overfitting</text>
+
+  <!-- Clip Range -->
+  <rect x="625" y="260" width="550" height="150" fill="#1e293b" stroke="#fbbf24" stroke-width="3" rx="10"/>
+  <text x="900" y="295" font-size="18" fill="#fbbf24" font-weight="bold" text-anchor="middle">PPO Clip Range ()</text>
+  <text x="655" y="330" font-size="13" fill="#ef4444"> Too small (0.05): Too conservative</text>
+  <text x="655" y="355" font-size="13" fill="#10b981"> Just right (0.2): Balanced updates </text>
+  <text x="655" y="380" font-size="13" fill="#ef4444"> Too large (0.5): Policy can change too much</text>
+  <text x="655" y="395" font-size="11" fill="#94a3b8" font-style="italic">Tip: 0.2 works well for most cases</text>
+
+  <!-- Training Steps -->
+  <rect x="50" y="440" width="550" height="150" fill="#1e293b" stroke="#ec4899" stroke-width="3" rx="10"/>
+  <text x="325" y="475" font-size="18" fill="#ec4899" font-weight="bold" text-anchor="middle">Total Training Steps</text>
+  <text x="80" y="510" font-size="13" fill="#ef4444"> Too few (&lt;1000): Underfitting</text>
+  <text x="80" y="535" font-size="13" fill="#10b981"> Just right (5000-20000): Converged </text>
+  <text x="80" y="560" font-size="13" fill="#fbbf24"> Too many (&gt;50000): Diminishing returns</text>
+  <text x="80" y="575" font-size="11" fill="#94a3b8" font-style="italic">Tip: Monitor reward plateau to stop early</text>
+
+  <!-- Temperature -->
+  <rect x="625" y="440" width="550" height="150" fill="#1e293b" stroke="#06b6d4" stroke-width="3" rx="10"/>
+  <text x="900" y="475" font-size="18" fill="#06b6d4" font-weight="bold" text-anchor="middle">Generation Temperature</text>
+  <text x="655" y="510" font-size="13" fill="#fbbf24"> Low (0.3): Repetitive, conservative</text>
+  <text x="655" y="535" font-size="13" fill="#10b981"> Medium (0.7-1.0): Balanced diversity </text>
+  <text x="655" y="560" font-size="13" fill="#ef4444"> High (1.5+): Random, incoherent</text>
+  <text x="655" y="575" font-size="11" fill="#94a3b8" font-style="italic">Tip: Lower for math, higher for creative tasks</text>
+
+  <!-- Best Practices -->
+  <rect x="50" y="620" width="1100" height="150" fill="#0f172a" stroke="#10b981" stroke-width="3" rx="10"/>
+  <text x="600" y="655" font-size="18" fill="#10b981" font-weight="bold" text-anchor="middle"> Best Practices</text>
+  <text x="80" y="690" font-size="13" fill="#cbd5e1">1. Start with conservative hyperparameters (small LR, moderate batch size)</text>
+  <text x="80" y="715" font-size="13" fill="#cbd5e1">2. Monitor training curves (reward, loss, KL divergence)</text>
+  <text x="80" y="740" font-size="13" fill="#cbd5e1">3. Use learning rate warmup + cosine decay for stability</text>
+  <text x="80" y="765" font-size="13" fill="#10b981">4. Keep detailed logs to compare runs and identify optimal settings</text>
+</svg>

@@ -1,0 +1,8 @@
+{
+  "title": "Introduction",
+  "icon": "Sparkles",
+  "pages": [
+    "history",
+    "quickstart"
+  ]
+}

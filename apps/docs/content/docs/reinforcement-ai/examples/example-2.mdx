@@ -1,0 +1,226 @@
+---
+title: 'Example 2: Math Verifier'
+description: Train a model to solve math problems correctly using verifiable rewards
+icon: Calculator
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<div className="flex items-center justify-between mb-6">
+  <div className="text-3xl font-bold text-orange-500">Example 2: Math Verifier</div>
+  <div className="px-4 py-2 rounded-full bg-orange-500 text-white font-bold">
+    ⏱️ 20 minutes
+  </div>
+</div>
+
+**Goal:** Train a model to solve math problems correctly using verifiable rewards.
+
+## For Non-Technical People
+
+<Callout type="info">
+  This is like a math teacher checking homework. The teacher knows the right answer (because they have an answer key), so they can give an A+ for correct answers and an F for wrong ones. The student (AI) learns by trying to get more A's!
+
+  **Real-world use cases:** Math tutoring apps, automated homework checking, coding problem verification, fact-checking systems.
+</Callout>
+
+![Math Verifier Logic](/reinforcement-ai/20-math-verifier-logic.svg)
+
+## For Technical People
+
+<div className="p-6 rounded-lg bg-orange-500/10 border-l-4 border-orange-500 my-6">
+  <div className="mb-4">
+    This demonstrates <strong>RLVR (Reinforcement Learning with Verifiable Rewards)</strong>. We use Python's eval() safely to verify mathematical correctness. The reward function uses graduated rewards: correct answer (+3), close answer (+0.5 to +2), wrong answer (-1).
+  </div>
+  <div>
+    <strong>Technical Details:</strong>
+    <ul className="mt-2 ml-4 list-disc">
+      <li><strong>Verification Method:</strong> Sandboxed eval() with limited namespace</li>
+      <li><strong>Proximity Scoring:</strong> abs(predicted - actual) / actual</li>
+      <li><strong>Reward Shaping:</strong> Graduated rewards encourage "getting warmer"</li>
+      <li><strong>Safety:</strong> Only allows arithmetic operations (no code injection)</li>
+    </ul>
+  </div>
+</div>
+
+## Complete Python Implementation
+
+```python title="example2_math_verifier.py"
+import re
+from datasets import Dataset
+
+# ========================================
+# STEP 1: Create Math Problems Dataset
+# ========================================
+training_data = [
+    {"prompt": "What is 15 + 27?", "answer": 42},
+    {"prompt": "Calculate 144 / 12", "answer": 12},
+    {"prompt": "What is 8 * 9?", "answer": 72},
+    {"prompt": "Solve: 100 - 37", "answer": 63},
+    {"prompt": "What is 25 + 38?", "answer": 63},
+    {"prompt": "Calculate 7 * 8", "answer": 56},
+    {"prompt": "What is 91 - 28?", "answer": 63},
+    {"prompt": "Solve: 36 / 6", "answer": 6},
+    {"prompt": "What is 45 + 67?", "answer": 112},
+    {"prompt": "Calculate 12 * 5", "answer": 60},
+    {"prompt": "What is 200 - 135?", "answer": 65},
+    {"prompt": "Solve: 88 / 11", "answer": 8},
+]
+
+dataset = Dataset.from_list(training_data)
+
+# ========================================
+# STEP 2: Define Math Verification Reward
+# ========================================
+def math_verifier_reward(prompts, outputs, correct_answers, **kwargs):
+    """
+    Verifies mathematical correctness with graduated rewards.
+
+    Reward Scale:
+    - Exact match: +3.0
+    - Within 10%: +2.0
+    - Within 25%: +1.0
+    - Within 50%: +0.5
+    - Wrong: -1.0
+    - No number: -2.0
+
+    Args:
+        prompts: List of math questions
+        outputs: List of model responses
+        correct_answers: List of correct numerical answers
+
+    Returns:
+        rewards: List of reward scores
+    """
+    rewards = []
+
+    for output, correct in zip(outputs, correct_answers):
+        # Extract numbers from model output using regex
+        # This handles "The answer is 42" or just "42"
+        numbers = re.findall(r'-?\d+\.?\d*', output)
+
+        if len(numbers) == 0:
+            # Model didn't provide any number
+            reward = -2.0
+        else:
+            # Take the first number found
+            try:
+                predicted = float(numbers[0])
+                actual = float(correct)
+
+                # Check if exact match
+                if predicted == actual:
+                    reward = +3.0  # Perfect!
+                else:
+                    # Calculate proximity
+                    if actual != 0:
+                        error_percent = abs(predicted - actual) / abs(actual)
+                    else:
+                        error_percent = 1.0 if predicted != 0 else 0.0
+
+                    # Graduated rewards based on proximity
+                    if error_percent < 0.1:  # Within 10%
+                        reward = +2.0
+                    elif error_percent < 0.25:  # Within 25%
+                        reward = +1.0
+                    elif error_percent < 0.5:  # Within 50%
+                        reward = +0.5
+                    else:
+                        reward = -1.0  # Too far off
+
+            except:
+                # Couldn't parse as number
+                reward = -2.0
+
+        rewards.append(reward)
+
+    return rewards
+
+# ========================================
+# STEP 3: Test the Verifier
+# ========================================
+print("Testing math verifier with sample outputs:\n")
+
+test_prompts = ["What is 15 + 27?"] * 5
+test_outputs = [
+    "42",  # Exact
+    "The answer is 42",  # Exact (with text)
+    "I think it's around 45",  # Close (within 10%)
+    "Maybe 60?",  # Far off
+    "I'm not sure",  # No number
+]
+test_correct = [42] * 5
+
+test_rewards = math_verifier_reward(test_prompts, test_outputs, test_correct)
+
+for i, (output, reward) in enumerate(zip(test_outputs, test_rewards)):
+    print(f"Example {i+1}:")
+    print(f"  Output: {output}")
+    print(f"  Reward: {reward:.1f}")
+    print()
+
+# ========================================
+# STEP 4: Train with GRPO
+# ========================================
+from trl import GRPOConfig, GRPOTrainer
+
+# Prepare dataset with correct_answer field
+def add_answer_to_prompt(example):
+    return {
+        "prompt": example["prompt"],
+        "correct_answer": example["answer"]
+    }
+
+dataset = dataset.map(add_answer_to_prompt)
+
+config = GRPOConfig(
+    output_dir = "./math_verifier_model",
+    num_train_epochs = 3,
+    per_device_train_batch_size = 1,
+    gradient_accumulation_steps = 4,
+    num_generations = 10,  # More generations for exploration
+    learning_rate = 5e-6,
+    temperature = 1.0,  # Lower temperature for accuracy
+)
+
+trainer = GRPOTrainer(
+    model = model,
+    args = config,
+    train_dataset = dataset,
+    reward_function = math_verifier_reward,
+    tokenizer = tokenizer,
+)
+
+print("🚀 Starting math training...")
+trainer.train()
+print("✅ Model now trained for math!")
+```
+
+## Expected Results After Training
+
+| Question | Before Training | After Training | Improvement |
+|----------|----------------|----------------|-------------|
+| 15 + 27 = ? | "It's approximately 40-45" | "42" | ✅ Exact |
+| 144 / 12 = ? | "Around 10-15" | "12" | ✅ Exact |
+| 8 * 9 = ? | "Maybe 64?" | "72" | ✅ Exact |
+
+## Key Insights
+
+<Callout title="RLVR Power">
+  This example demonstrates **RLVR (Reinforcement Learning with Verifiable Rewards)** - the secret behind reasoning models like OpenAI O1 and DeepSeek R1. When you can automatically verify correctness (like in math or code), you don't need human labelers!
+</Callout>
+
+### Why Graduated Rewards?
+
+Instead of binary correct/wrong, we reward "getting warmer":
+- **Exact match:** +3.0 (celebrate!)
+- **Close (within 10%):** +2.0 (almost there!)
+- **Somewhat close (within 25%):** +1.0 (on the right track)
+- **Way off:** -1.0 (try again)
+
+This helps the model learn faster by rewarding progress, not just perfection.
+
+## Next Steps
+
+- [Example 3: Length Control](/docs/reinforcement-ai/examples/example-3) - Learn to control output length
+- [Example 4: Multi-Metric Rewards](/docs/reinforcement-ai/examples/example-4) - Combine multiple objectives
+- [RL Concepts](/docs/reinforcement-ai/fundamentals/rl-concepts) - Understand the theory

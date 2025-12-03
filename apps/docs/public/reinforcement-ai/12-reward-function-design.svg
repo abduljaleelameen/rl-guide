@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 900">
+  <rect width="1400" height="900" fill="#0f172a"/>
+  <text x="700" y="40" font-size="28" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Reward Function Design Principles</text>
+  <text x="700" y="70" font-size="14" fill="#94a3b8" text-anchor="middle">6 Key Patterns for Effective RL</text>
+
+  <!-- Pattern 1: Binary -->
+  <rect x="50" y="120" width="420" height="200" fill="#1e293b" stroke="#10b981" stroke-width="2" rx="8"/>
+  <text x="260" y="155" font-size="16" font-weight="bold" fill="#10b981" text-anchor="middle">1. Binary Rewards</text>
+  <text x="70" y="185" font-size="13" fill="#cbd5e1">Simple right/wrong:</text>
+  <text x="90" y="210" font-size="12" fill="#10b981"> Correct: +1.0</text>
+  <text x="90" y="235" font-size="12" fill="#ef4444"> Wrong: -1.0</text>
+  <text x="70" y="270" font-size="12" fill="#94a3b8">Use for: Classification, exact matches</text>
+  <text x="70" y="295" font-size="11" fill="#64748b" font-style="italic">Example: "Is capital Paris?"  Yes/No</text>
+
+  <!-- Pattern 2: Graduated -->
+  <rect x="490" y="120" width="420" height="200" fill="#1e293b" stroke="#f59e0b" stroke-width="2" rx="8"/>
+  <text x="700" y="155" font-size="16" font-weight="bold" fill="#f59e0b" text-anchor="middle">2. Graduated Rewards</text>
+  <text x="510" y="185" font-size="13" fill="#cbd5e1">Tiered scoring:</text>
+  <text x="530" y="210" font-size="12" fill="#10b981">Perfect: +3.0</text>
+  <text x="530" y="235" font-size="12" fill="#fbbf24">Close: +2.0</text>
+  <text x="530" y="260" font-size="12" fill="#f59e0b">Far: +0.5</text>
+  <text x="510" y="295" font-size="11" fill="#64748b" font-style="italic">Example: Math within 10% error</text>
+
+  <!-- Pattern 3: Continuous -->
+  <rect x="930" y="120" width="420" height="200" fill="#1e293b" stroke="#8b5cf6" stroke-width="2" rx="8"/>
+  <text x="1140" y="155" font-size="16" font-weight="bold" fill="#8b5cf6" text-anchor="middle">3. Continuous Rewards</text>
+  <text x="950" y="185" font-size="13" fill="#cbd5e1">Smooth functions:</text>
+  <text x="970" y="210" font-size="12" fill="#cbd5e1">Gaussian: e^(-(d)/(2))</text>
+  <text x="970" y="235" font-size="12" fill="#cbd5e1">Exponential: e^(-d/)</text>
+  <text x="950" y="270" font-size="12" fill="#94a3b8">Use for: Proximity, similarity</text>
+  <text x="950" y="295" font-size="11" fill="#64748b" font-style="italic">Example: Length control (target 50 words)</text>
+
+  <!-- Pattern 4: Rule-Based -->
+  <rect x="50" y="350" width="420" height="220" fill="#1e293b" stroke="#3b82f6" stroke-width="2" rx="8"/>
+  <text x="260" y="385" font-size="16" font-weight="bold" fill="#3b82f6" text-anchor="middle">4. Rule-Based Rewards</text>
+  <text x="70" y="415" font-size="13" fill="#cbd5e1">Multiple criteria:</text>
+  <text x="90" y="440" font-size="12" fill="#10b981">Has answer: +1.0</text>
+  <text x="90" y="465" font-size="12" fill="#f59e0b">Good length: +0.5</text>
+  <text x="90" y="490" font-size="12" fill="#8b5cf6">Polite tone: +0.3</text>
+  <text x="90" y="515" font-size="12" fill="#ef4444">No swearing: -2.0</text>
+  <text x="70" y="550" font-size="11" fill="#64748b" font-style="italic">Example: Content moderation</text>
+
+  <!-- Pattern 5: Model-Based -->
+  <rect x="490" y="350" width="420" height="220" fill="#1e293b" stroke="#ec4899" stroke-width="2" rx="8"/>
+  <text x="700" y="385" font-size="16" font-weight="bold" fill="#ec4899" text-anchor="middle">5. Model-Based Rewards</text>
+  <text x="510" y="415" font-size="13" fill="#cbd5e1">LLM-as-judge:</text>
+  <text x="530" y="440" font-size="12" fill="#cbd5e1">Use GPT-4 to score 1-10</text>
+  <text x="530" y="465" font-size="12" fill="#cbd5e1">Criteria: accuracy, clarity</text>
+  <text x="510" y="500" font-size="12" fill="#94a3b8">Pros: Captures nuance</text>
+  <text x="510" y="525" font-size="12" fill="#ef4444">Cons: Expensive, slow</text>
+  <text x="510" y="550" font-size="11" fill="#64748b" font-style="italic">Example: Essay quality grading</text>
+
+  <!-- Pattern 6: Hybrid -->
+  <rect x="930" y="350" width="420" height="220" fill="#1e293b" stroke="#06b6d4" stroke-width="2" rx="8"/>
+  <text x="1140" y="385" font-size="16" font-weight="bold" fill="#06b6d4" text-anchor="middle">6. Hybrid Rewards</text>
+  <text x="950" y="415" font-size="13" fill="#cbd5e1">Weighted combination:</text>
+  <text x="970" y="440" font-size="12" fill="#cbd5e1">Correctness  0.40</text>
+  <text x="970" y="465" font-size="12" fill="#cbd5e1">+ Conciseness  0.25</text>
+  <text x="970" y="490" font-size="12" fill="#cbd5e1">+ Clarity  0.20</text>
+  <text x="970" y="515" font-size="12" fill="#cbd5e1">+ Tone  0.15</text>
+  <text x="950" y="550" font-size="11" fill="#64748b" font-style="italic">Example: Multi-objective optimization</text>
+
+  <!-- Best Practices -->
+  <rect x="50" y="620" width="1300" height="240" fill="#1e293b" stroke="#10b981" stroke-width="3" rx="12"/>
+  <text x="700" y="660" font-size="20" font-weight="bold" fill="#10b981" text-anchor="middle"> Best Practices</text>
+
+  <text x="80" y="700" font-size="14" fill="#cbd5e1">1. <text fill="#10b981" font-weight="bold">Start simple:</text> Use binary/graduated before complex functions</text>
+  <text x="80" y="730" font-size="14" fill="#cbd5e1">2. <text fill="#f59e0b" font-weight="bold">Make it verifiable:</text> Can you manually check if reward is fair?</text>
+  <text x="80" y="760" font-size="14" fill="#cbd5e1">3. <text fill="#8b5cf6" font-weight="bold">Scale appropriately:</text> Keep rewards in similar ranges (-3 to +3)</text>
+  <text x="80" y="790" font-size="14" fill="#cbd5e1">4. <text fill="#ec4899" font-weight="bold">Avoid reward hacking:</text> Watch for loopholes (e.g., empty responses)</text>
+  <text x="80" y="820" font-size="14" fill="#cbd5e1">5. <text fill="#06b6d4" font-weight="bold">Iterate:</text> Start with one metric, add complexity gradually</text>
+
+</svg>

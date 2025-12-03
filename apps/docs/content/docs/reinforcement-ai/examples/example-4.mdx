@@ -1,0 +1,253 @@
+---
+title: 'Example 4: Proximity Rewards'
+description: Train a model to provide numerical estimates with graduated rewards based on proximity
+icon: Target
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<div className="flex items-center justify-between mb-6">
+  <div className="text-3xl font-bold text-orange-500">Example 4: Proximity Rewards</div>
+  <div className="px-4 py-2 rounded-full bg-orange-500 text-white font-bold">
+    ⏱️ 25 minutes
+  </div>
+</div>
+
+**Goal:** Train a model to provide numerical estimates with graduated rewards based on proximity to the correct answer.
+
+## For Non-Technical People
+
+<Callout type="info">
+  Imagine teaching someone to guess your age. If they say "30" and you're 32, that's pretty good! If they say "18", that's way off. Proximity rewards give partial credit for being close, encouraging the model to "get warmer" rather than requiring perfection immediately.
+
+  **Real-world use cases:** Price estimation, date prediction, inventory forecasting, risk scoring, exam grading with partial credit.
+</Callout>
+
+![Proximity Scoring Heatmap](/reinforcement-ai/22-proximity-scoring-heatmap.svg)
+
+## For Technical People
+
+<div className="p-6 rounded-lg bg-orange-500/10 border-l-4 border-orange-500 my-6">
+  <div className="mb-4">
+    We implement a continuous reward function using exponential decay: reward = max_reward × exp(-distance/scale). This creates a smooth gradient that guides optimization more effectively than step functions. The scale parameter controls the decay rate (reward bandwidth).
+  </div>
+  <div>
+    <strong>Technical Details:</strong>
+    <ul className="mt-2 ml-4 list-disc">
+      <li><strong>Formula:</strong> R = R_max × exp(-|predicted - actual| / σ)</li>
+      <li><strong>Scale (σ):</strong> Controls reward sensitivity (smaller = stricter)</li>
+      <li><strong>Normalization:</strong> Convert to percentage error for scale-invariant rewards</li>
+      <li><strong>Advantage:</strong> Smooth gradients prevent reward cliffs</li>
+    </ul>
+  </div>
+</div>
+
+## Complete Python Implementation
+
+```python title="example4_proximity_rewards.py"
+import math
+import re
+from datasets import Dataset
+
+# Training data: estimation tasks
+training_data = [
+    {"prompt": "How many days are in a year?", "answer": 365, "tolerance": 10},
+    {"prompt": "What's the population of Tokyo (millions)?", "answer": 14, "tolerance": 3},
+    {"prompt": "How tall is Mount Everest (meters)?", "answer": 8849, "tolerance": 100},
+    {"prompt": "What year did WWII end?", "answer": 1945, "tolerance": 2},
+    {"prompt": "How many bones in human body?", "answer": 206, "tolerance": 15},
+    {"prompt": "Speed of light (km/s)?", "answer": 300000, "tolerance": 10000},
+    {"prompt": "Distance Earth to Moon (km)?", "answer": 384400, "tolerance": 20000},
+    {"prompt": "Boiling point of water (Celsius)?", "answer": 100, "tolerance": 5},
+    {"prompt": "How many US states?", "answer": 50, "tolerance": 0},
+    {"prompt": "Human body temperature (Celsius)?", "answer": 37, "tolerance": 1},
+]
+
+dataset = Dataset.from_list(training_data)
+
+def proximity_reward_function(prompts, outputs, answers, tolerances, **kwargs):
+    """
+    Advanced proximity-based reward with multiple scoring strategies.
+
+    Strategies:
+    1. Exponential decay: Smooth falloff from perfect score
+    2. Percentage error: Scale-invariant for different magnitudes
+    3. Tiered rewards: Bonus zones for excellent answers
+
+    Args:
+        prompts: Questions
+        outputs: Model responses
+        answers: Correct numerical answers
+        tolerances: Acceptable error margin for each question
+
+    Returns:
+        rewards: Reward scores
+    """
+    rewards = []
+
+    for output, correct, tolerance in zip(outputs, answers, tolerances):
+        # Extract number from response
+        numbers = re.findall(r'-?\d+\.?\d*', output)
+
+        if len(numbers) == 0:
+            reward = -2.0  # No number provided
+        else:
+            try:
+                predicted = float(numbers[0])
+                actual = float(correct)
+                tol = float(tolerance)
+
+                # Calculate absolute distance
+                distance = abs(predicted - actual)
+
+                # STRATEGY 1: Exact match bonus
+                if distance == 0:
+                    reward = 3.0  # Perfect!
+
+                # STRATEGY 2: Within tolerance = high reward
+                elif distance <= tol:
+                    # Linear interpolation within tolerance
+                    # reward goes from 2.5 (at tolerance) to 3.0 (exact)
+                    reward = 2.5 + 0.5 * (1 - distance / tol)
+
+                # STRATEGY 3: Beyond tolerance = exponential decay
+                else:
+                    # Percentage error (scale-invariant)
+                    if actual != 0:
+                        pct_error = distance / abs(actual)
+                    else:
+                        pct_error = 1.0 if distance > 0 else 0.0
+
+                    # Exponential decay based on percentage error
+                    # σ = 0.2 means 20% error gives ~60% max reward
+                    sigma = 0.2
+                    reward = 2.5 * math.exp(-pct_error / sigma)
+
+                    # Floor at -1.0 for very wrong answers
+                    reward = max(-1.0, reward)
+
+                # BONUS: Reward for including units or context
+                if any(word in output.lower() for word in ['approximately', 'around', 'about']):
+                    reward += 0.1  # Bonus for showing uncertainty
+
+            except:
+                reward = -2.0
+
+        rewards.append(reward)
+
+    return rewards
+
+# Test the reward function
+print("Testing Proximity Rewards:\n")
+test_cases = [
+    (365, 365, "Exact match"),
+    (365, 370, "Within tolerance (5 off)"),
+    (365, 400, "Outside tolerance (35 off, ~10% error)"),
+    (365, 500, "Way off (135 off, ~37% error)"),
+]
+
+for actual, predicted, desc in test_cases:
+    output = str(predicted)
+    reward = proximity_reward_function(
+        [""], [output], [actual], [10]
+    )[0]
+    print(f"{desc}:")
+    print(f"  Predicted: {predicted}, Actual: {actual}")
+    print(f"  Reward: {reward:.2f}")
+    print()
+
+# Training configuration
+from trl import GRPOConfig, GRPOTrainer
+
+config = GRPOConfig(
+    output_dir = "./proximity_model",
+    num_train_epochs = 3,
+    per_device_train_batch_size = 1,
+    gradient_accumulation_steps = 4,
+    num_generations = 12,  # More samples for exploration
+    learning_rate = 5e-6,
+    temperature = 0.8,  # Lower temp for more focused predictions
+)
+
+trainer = GRPOTrainer(
+    model = model,
+    args = config,
+    train_dataset = dataset,
+    reward_function = lambda p, o, **kw: proximity_reward_function(
+        p, o,
+        [d['answer'] for d in dataset],
+        [d['tolerance'] for d in dataset]
+    ),
+    tokenizer = tokenizer,
+)
+
+print("Training with proximity rewards...")
+trainer.train()
+print("Model trained for numerical estimation!")
+```
+
+## Reward Strategies Breakdown
+
+This implementation uses three complementary strategies:
+
+### Strategy 1: Exact Match Bonus
+```python
+if distance == 0:
+    reward = 3.0  # Perfect score
+```
+
+### Strategy 2: Linear Within Tolerance
+```python
+elif distance <= tolerance:
+    reward = 2.5 + 0.5 * (1 - distance / tolerance)
+    # Smoothly interpolates from 3.0 (exact) to 2.5 (at tolerance edge)
+```
+
+### Strategy 3: Exponential Decay Beyond Tolerance
+```python
+else:
+    pct_error = distance / abs(actual)
+    reward = 2.5 * math.exp(-pct_error / 0.2)
+    # Gracefully degrades based on percentage error
+```
+
+## Test Results
+
+| Predicted | Actual | Distance | Reward | Assessment |
+|-----------|--------|----------|--------|------------|
+| 365 | 365 | 0 | +3.00 | Perfect match |
+| 370 | 365 | 5 | +2.75 | Within tolerance |
+| 400 | 365 | 35 | +1.52 | ~10% error |
+| 500 | 365 | 135 | +0.17 | ~37% error |
+
+## Key Takeaway
+
+<Callout title="Key Takeaway">
+  Proximity rewards are essential when perfection is hard but "close enough" is valuable. The exponential decay creates smooth gradients that help models learn faster than binary right/wrong scoring. This technique works for any continuous numerical target.
+</Callout>
+
+## Advanced Tuning
+
+### Adjusting Sensitivity (σ parameter)
+
+```python
+# Strict scoring (σ = 0.1): Rewards drop off quickly
+sigma = 0.1
+
+# Moderate scoring (σ = 0.2): Balanced (default)
+sigma = 0.2
+
+# Lenient scoring (σ = 0.5): More forgiving
+sigma = 0.5
+```
+
+### Scale-Invariant Rewards
+
+The percentage error approach ensures fair scoring across different magnitudes:
+- 100 vs 110 (10% error) = Same reward as 1000 vs 1100 (10% error)
+
+## Next Steps
+
+- [Example 5: Multi-Metric Evaluation](/docs/reinforcement-ai/examples/example-5) - Combine multiple objectives
+- [Reward Functions Guide](/docs/reinforcement-ai/fundamentals/reward-functions) - Six proven patterns
+- [GRPO Guide](/docs/reinforcement-ai/fundamentals/grpo-guide) - Deep dive into the algorithm

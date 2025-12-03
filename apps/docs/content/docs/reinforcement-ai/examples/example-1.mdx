@@ -1,0 +1,224 @@
+---
+title: 'Example 1: Sentiment Control'
+description: Train a model to always respond with positive, uplifting messages
+icon: Smile
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<div className="flex items-center justify-between mb-6">
+  <div className="text-3xl font-bold text-green-500">Example 1: Sentiment Control</div>
+  <div className="px-4 py-2 rounded-full bg-green-500 text-white font-bold">
+    ⏱️ 15 minutes
+  </div>
+</div>
+
+**Goal:** Train a model to always respond with positive, uplifting messages.
+
+## For Non-Technical People
+
+<Callout type="info">
+  Imagine you're training a customer service chatbot. You want it to always be positive and encouraging, never negative or rude. This example teaches the AI to be like a cheerful friend who always finds the bright side!
+
+  **Real-world use cases:** Customer support bots, mental health companions, children's educational apps, motivational coaches.
+</Callout>
+
+![Sentiment Reward Flow](/reinforcement-ai/19-reward-sentiment-flow.svg)
+
+## For Technical People
+
+<div className="p-6 rounded-lg bg-green-500/10 border-l-4 border-green-500 my-6">
+  <div className="mb-4">
+    We'll use TextBlob's sentiment analysis to score outputs from -1.0 (very negative) to +1.0 (very positive). The reward function simply maps this score directly, encouraging the model to maximize sentiment polarity.
+  </div>
+  <div>
+    <strong>Technical Details:</strong>
+    <ul className="mt-2 ml-4 list-disc">
+      <li><strong>Algorithm:</strong> Sentiment analysis via TextBlob polarity</li>
+      <li><strong>Reward Range:</strong> -3.0 to +3.0</li>
+      <li><strong>Optimization Goal:</strong> Maximize positive sentiment in all outputs</li>
+      <li><strong>Training Time:</strong> ~50 steps to see clear preference shift</li>
+    </ul>
+  </div>
+</div>
+
+## Complete Python Implementation
+
+```python title="example1_sentiment.py"
+# Install sentiment analysis library
+!pip install textblob
+
+from textblob import TextBlob
+from datasets import Dataset
+
+# ========================================
+# STEP 1: Create Training Data
+# ========================================
+# Create prompts that could have positive or negative responses
+training_data = [
+    {"prompt": "Tell me about your day."},
+    {"prompt": "How do you feel about challenges?"},
+    {"prompt": "What's your opinion on rainy weather?"},
+    {"prompt": "Describe your approach to problems."},
+    {"prompt": "How do you handle difficult situations?"},
+    {"prompt": "What do you think about Mondays?"},
+    {"prompt": "Tell me about working hard."},
+    {"prompt": "How do you feel when things go wrong?"},
+    {"prompt": "Describe a typical morning."},
+    {"prompt": "What's your view on learning new things?"},
+]
+
+dataset = Dataset.from_list(training_data)
+
+# ========================================
+# STEP 2: Define Sentiment Reward Function
+# ========================================
+def sentiment_reward_function(prompts, outputs, **kwargs):
+    """
+    Reward function that encourages positive sentiment.
+
+    How it works:
+    1. Analyze sentiment of each output (-1 to +1)
+    2. Scale sentiment to reward range (-3 to +3)
+    3. Add bonus for very positive responses
+
+    Args:
+        prompts: List of input questions
+        outputs: List of model responses
+
+    Returns:
+        rewards: List of reward scores
+    """
+    rewards = []
+
+    for output in outputs:
+        # Analyze sentiment using TextBlob
+        # polarity ranges from -1.0 (negative) to +1.0 (positive)
+        blob = TextBlob(output)
+        sentiment_score = blob.sentiment.polarity
+
+        # Base reward: scale sentiment to our reward range
+        reward = sentiment_score * 3.0
+
+        # Bonus for very positive responses (> 0.5)
+        if sentiment_score > 0.5:
+            reward += 0.5  # Extra reward for being super positive!
+
+        # Penalty for negative responses (< -0.2)
+        if sentiment_score < -0.2:
+            reward -= 1.0  # Discourage negativity
+
+        # Add small bonus if response is longer (more thoughtful)
+        word_count = len(output.split())
+        if word_count > 20 and word_count < 100:
+            reward += 0.2  # Sweet spot: detailed but not rambling
+
+        rewards.append(reward)
+
+    return rewards
+
+# ========================================
+# STEP 3: Test the Reward Function
+# ========================================
+print("Testing reward function with sample outputs:\n")
+
+test_outputs = [
+    "I had an amazing day! Everything went perfectly and I'm so happy!",
+    "It was okay. Nothing special.",
+    "Everything went wrong. I'm frustrated and annoyed.",
+]
+
+test_rewards = sentiment_reward_function([], test_outputs)
+
+for i, (output, reward) in enumerate(zip(test_outputs, test_rewards)):
+    sentiment = TextBlob(output).sentiment.polarity
+    print(f"Example {i+1}:")
+    print(f"  Output: {output}")
+    print(f"  Sentiment Score: {sentiment:.2f}")
+    print(f"  Reward: {reward:.2f}")
+    print()
+
+# ========================================
+# STEP 4: Train with GRPO
+# ========================================
+from trl import GRPOConfig, GRPOTrainer
+
+config = GRPOConfig(
+    output_dir = "./sentiment_model",
+    num_train_epochs = 2,
+    per_device_train_batch_size = 1,
+    gradient_accumulation_steps = 4,
+    num_generations = 8,
+    learning_rate = 5e-6,
+    temperature = 1.2,
+)
+
+trainer = GRPOTrainer(
+    model = model,  # Assumes model loaded from previous section
+    args = config,
+    train_dataset = dataset,
+    reward_function = sentiment_reward_function,
+    tokenizer = tokenizer,
+)
+
+print("🚀 Starting sentiment training...")
+trainer.train()
+print("✅ Model now trained to be positive!")
+```
+
+## Expected Results
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+  <div className="p-6 rounded-lg bg-gradient-to-br from-red-900 to-red-800">
+    <div className="text-red-300 font-bold mb-4">BEFORE TRAINING</div>
+    <div className="text-muted-foreground mb-3"><strong>Prompt:</strong> "How do you feel about Mondays?"</div>
+    <div className="bg-black/30 p-4 rounded-lg mb-3">
+      <span className="text-red-300 font-mono text-sm">
+        "Mondays can be challenging. Many people find them difficult after the weekend. They often feel tired and unmotivated."
+      </span>
+    </div>
+    <div className="text-red-500 text-sm">Sentiment: -0.2 | Reward: -1.6</div>
+  </div>
+
+  <div className="p-6 rounded-lg bg-gradient-to-br from-green-900 to-green-800">
+    <div className="text-green-300 font-bold mb-4">AFTER TRAINING</div>
+    <div className="text-muted-foreground mb-3"><strong>Prompt:</strong> "How do you feel about Mondays?"</div>
+    <div className="bg-black/30 p-4 rounded-lg mb-3">
+      <span className="text-green-300 font-mono text-sm">
+        "Mondays are wonderful opportunities for fresh starts! They're a chance to set new goals, tackle exciting projects, and approach the week with renewed energy and optimism!"
+      </span>
+    </div>
+    <div className="text-green-500 text-sm">Sentiment: +0.7 | Reward: +2.6</div>
+  </div>
+</div>
+
+## Key Takeaway
+
+<Callout title="Key Takeaway" type="info">
+  Reward functions don't have to be complex! This simple sentiment-based reward transformed the model's personality. The key insight: **reward what you want more of**. By giving high rewards to positive outputs, the model learned to be optimistic.
+</Callout>
+
+## Interactive Playground
+
+Try modifying the reward function below and run the tests to see how different reward strategies affect the scores:
+
+<CodePlayground />
+
+## Try This Challenge
+
+<div className="p-6 rounded-lg bg-blue-500/10 border-l-4 border-blue-500 my-6">
+  <div className="font-bold text-blue-500 mb-3">Try This Challenge:</div>
+  <ol className="list-decimal ml-6 space-y-2 text-muted-foreground">
+    <li>Modify the reward function to prefer neutral responses (sentiment near 0)</li>
+    <li>Add a penalty for using exclamation marks (to prevent over-enthusiasm)</li>
+    <li>Create a "formal tone" reward that penalizes casual language</li>
+  </ol>
+</div>
+
+## Next Steps
+
+Ready for more complex reward functions?
+
+- [Example 2: Math Verifier](/docs/reinforcement-ai/examples/example-2) - Learn to verify correctness
+- [Example 3: Length Control](/docs/reinforcement-ai/examples/example-3) - Control output length
+- [Example 4: Multi-Metric Rewards](/docs/reinforcement-ai/examples/example-4) - Combine multiple objectives

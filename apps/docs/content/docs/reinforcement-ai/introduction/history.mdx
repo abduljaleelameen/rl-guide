@@ -1,0 +1,128 @@
+---
+title: History of Open-Source AI
+description: The evolution of Large Language Models from LLaMA to modern open-source AI
+icon: Clock
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+## The Birth of LLaMA
+
+In early 2023, something unexpected happened that would change the AI landscape forever. Meta released a research paper about LLaMA (Large Language Model Meta AI), but didn't publicly release the weights. Then... it got leaked.
+
+This "accident" essentially kickstarted the entire open-source AI movement, enabling researchers and developers worldwide to build upon and improve these models.
+
+![Timeline: Evolution of Open-Source LLMs](/reinforcement-ai/01-llm-evolution-timeline.svg)
+
+## Timeline of Key Events
+
+<Steps>
+  <Step>
+    ### December 2022: ChatGPT Released
+
+    OpenAI releases ChatGPT, shocking the world with its conversational abilities. This marked the beginning of mainstream AI awareness.
+  </Step>
+
+  <Step>
+    ### February 2023: LLaMA 1 Leaked
+
+    Meta's LLaMA model weights get leaked, spawning the open-source LLM revolution. Trained on 1.4 trillion tokens.
+  </Step>
+
+  <Step>
+    ### September 2024: O1 Preview Released
+
+    OpenAI's O1 model introduces long reasoning traces, creating a capability gap. The open-source community enters a 4-month "drought."
+  </Step>
+
+  <Step>
+    ### January 2025: DeepSeek R1 Released
+
+    DeepSeek releases R1, proving open-source can match closed-source reasoning capabilities. The drought ends!
+  </Step>
+</Steps>
+
+## Training Data: Then vs Now
+
+The amount of data used to train AI models has exploded:
+
+<div className="space-y-4 my-8">
+  <div>
+    <div className="flex justify-between mb-2">
+      <span>LLaMA 1 (2023)</span>
+      <span className="text-muted-foreground">1.4 Trillion Tokens</span>
+    </div>
+    <div className="w-full bg-muted rounded-full h-3">
+      <div className="bg-blue-500 h-3 rounded-full" style={{width: '5%'}}></div>
+    </div>
+  </div>
+
+  <div>
+    <div className="flex justify-between mb-2">
+      <span>Gemma 3 (2024)</span>
+      <span className="text-muted-foreground">14 Trillion Tokens</span>
+    </div>
+    <div className="w-full bg-muted rounded-full h-3">
+      <div className="bg-green-500 h-3 rounded-full" style={{width: '47%'}}></div>
+    </div>
+  </div>
+
+  <div>
+    <div className="flex justify-between mb-2">
+      <span>LLaMA 4 (2025)</span>
+      <span className="text-muted-foreground">30 Trillion Tokens</span>
+    </div>
+    <div className="w-full bg-muted rounded-full h-3">
+      <div className="bg-orange-500 h-3 rounded-full" style={{width: '100%'}}></div>
+    </div>
+  </div>
+</div>
+
+<Callout title="What's a token?" type="info">
+  Think of tokens as pieces of words. The word "understanding" might be split into "under" + "stand" + "ing" = 3 tokens. More tokens = more knowledge!
+</Callout>
+
+![Training Loss Curves](/reinforcement-ai/02-training-loss-curves.svg)
+
+## Understanding Model Names
+
+Ever wondered what "Llama-3.1-8B-Instruct" actually means? Model names follow patterns that tell you exactly what you're getting.
+
+![Model Naming Convention Guide](/reinforcement-ai/08-model-naming-guide.svg)
+
+### Base / Foundation
+
+**What it means:** Raw pre-trained model
+
+**Behavior:** Completes text, doesn't follow instructions
+
+**Example:** `llama-3.1-8b`
+
+### Instruct / Chat
+
+**What it means:** Fine-tuned to follow instructions
+
+**Behavior:** Responds helpfully to questions
+
+**Example:** `llama-3.1-8b-instruct`
+
+### PT (Pre-trained)
+
+**What it means:** Same as "base" model
+
+**Context:** Some providers use "PT" instead of leaving it blank
+
+**Example:** `mistral-7b-pt`
+
+### Size (7B, 70B, etc.)
+
+**What it means:** Number of parameters (billions)
+
+**Rule of thumb:** Bigger = smarter but needs more compute
+
+**Example:** `8B` = 8 billion parameters
+
+<Callout title="Pro Tip">
+  When choosing a model, start with the "instruct" version (like `llama-3.1-8b-instruct`) for chat applications, and use the base model only if you're fine-tuning for a specific task.
+</Callout>

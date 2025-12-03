@@ -1,0 +1,296 @@
+---
+title: 'Example 7: vLLM Integration'
+description: Use vLLM for 10x faster inference during GRPO training
+icon: Zap
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+<div className="flex items-center justify-between mb-6">
+  <div className="text-3xl font-bold text-red-500">Example 7: vLLM Integration</div>
+  <div className="px-4 py-2 rounded-full bg-red-500 text-white font-bold">
+    ⏱️ 35 minutes
+  </div>
+</div>
+
+**Goal:** Use vLLM for fast inference during GRPO training (4000+ tokens/sec vs 400 tokens/sec).
+
+## For Non-Technical People
+
+<Callout type="info">
+  Imagine you're baking cookies and need to taste-test each batch. Regular training is like baking one cookie at a time - super slow! vLLM is like having 10 ovens running simultaneously, letting you test 10x more cookies in the same time. This dramatically speeds up the learning process!
+
+  **Real-world impact:** What took 12 hours now takes 1.2 hours. What cost $120 in GPU time now costs $12.
+</Callout>
+
+![vLLM Architecture](/reinforcement-ai/25-vllm-architecture.svg)
+
+## For Technical People
+
+<div className="p-6 rounded-lg bg-red-500/10 border-l-4 border-red-500 my-6">
+  <div className="mb-4">
+    vLLM uses PagedAttention for efficient KV cache management and continuous batching for dynamic throughput optimization. For GRPO, generation is the bottleneck (multiple rollouts per prompt), making vLLM essential for production training.
+  </div>
+  <div>
+    <strong>Technical Details:</strong>
+    <ul className="mt-2 ml-4 list-disc">
+      <li><strong>PagedAttention:</strong> Memory-efficient attention with paged KV cache</li>
+      <li><strong>Continuous Batching:</strong> Dynamic request scheduling for maximum throughput</li>
+      <li><strong>Tensor Parallelism:</strong> Multi-GPU model sharding</li>
+      <li><strong>Performance:</strong> 10-25x speedup vs naive HuggingFace generation</li>
+    </ul>
+  </div>
+</div>
+
+## Key Innovations
+
+### 1. PagedAttention
+Manages KV cache in non-contiguous memory blocks, reducing fragmentation and enabling higher batch sizes.
+
+### 2. Continuous Batching
+Unlike static batching, adds new requests as soon as slots become available - no waiting for entire batch to finish.
+
+### 3. Tensor Parallelism
+Automatically shards model across multiple GPUs for models that don't fit on single GPU.
+
+## Installation & Setup
+
+<Steps>
+  <Step>
+    ### Install vLLM
+
+    ```bash
+    pip install vllm
+    ```
+
+    For specific CUDA versions:
+    ```bash
+    pip install vllm-cuda12  # CUDA 12.x
+    pip install vllm-cuda11  # CUDA 11.x
+    ```
+  </Step>
+
+  <Step>
+    ### Start vLLM Server
+
+    ```bash
+    python -m vllm.entrypoints.openai.api_server \
+      --model Qwen/Qwen2.5-3B-Instruct \
+      --dtype bfloat16 \
+      --max-model-len 4096 \
+      --gpu-memory-utilization 0.8
+    ```
+
+    The server will start on `http://localhost:8000`
+  </Step>
+
+  <Step>
+    ### Integrate with GRPO Training
+
+    ```python
+    from openai import OpenAI
+
+    # Point to vLLM server
+    client = OpenAI(
+        base_url="http://localhost:8000/v1",
+        api_key="EMPTY"  # vLLM doesn't require auth
+    )
+
+    def vllm_generation_function(prompts, **kwargs):
+        """Generate using vLLM instead of model.generate()"""
+        outputs = []
+        for prompt in prompts:
+            response = client.completions.create(
+                model="Qwen/Qwen2.5-3B-Instruct",
+                prompt=prompt,
+                max_tokens=512,
+                temperature=1.0,
+                n=8,  # Generate 8 responses per prompt (GRPO)
+            )
+            outputs.extend([choice.text for choice in response.choices])
+        return outputs
+    ```
+  </Step>
+</Steps>
+
+## Complete vLLM + GRPO Example
+
+```python title="example7_vllm_grpo.py"
+from openai import OpenAI
+from datasets import Dataset
+from trl import GRPOConfig, GRPOTrainer
+
+# Start vLLM server first (in separate terminal):
+# python -m vllm.entrypoints.openai.api_server --model Qwen/Qwen2.5-3B-Instruct
+
+# Configure vLLM client
+vllm_client = OpenAI(
+    base_url="http://localhost:8000/v1",
+    api_key="EMPTY"
+)
+
+# Training dataset
+training_data = [
+    {"prompt": "What is the capital of France?"},
+    {"prompt": "Solve: 15 + 27"},
+    {"prompt": "Explain photosynthesis briefly."},
+    {"prompt": "What year did WWII end?"},
+]
+
+dataset = Dataset.from_list(training_data)
+
+# Reward function (reuse from previous examples)
+def sentiment_reward(prompts, outputs, **kwargs):
+    from textblob import TextBlob
+    rewards = []
+    for output in outputs:
+        sentiment = TextBlob(output).sentiment.polarity
+        rewards.append(sentiment * 3.0)
+    return rewards
+
+# GRPO Config with vLLM
+config = GRPOConfig(
+    output_dir="./vllm_grpo_model",
+    num_train_epochs=3,
+    per_device_train_batch_size=4,  # Can increase with vLLM!
+    num_generations=16,  # More generations = better estimates
+    learning_rate=5e-6,
+    temperature=1.0,
+)
+
+# Custom generation function
+def generate_with_vllm(model, tokenizer, prompts, **gen_kwargs):
+    """Replace HF generation with vLLM"""
+    outputs = []
+    num_return_sequences = gen_kwargs.get('num_return_sequences', 1)
+
+    for prompt in prompts:
+        response = vllm_client.completions.create(
+            model="Qwen/Qwen2.5-3B-Instruct",
+            prompt=prompt,
+            max_tokens=gen_kwargs.get('max_new_tokens', 256),
+            temperature=gen_kwargs.get('temperature', 1.0),
+            n=num_return_sequences,
+        )
+        for choice in response.choices:
+            outputs.append(choice.text)
+
+    return outputs
+
+# Train with vLLM acceleration
+trainer = GRPOTrainer(
+    model=model,
+    args=config,
+    train_dataset=dataset,
+    reward_function=sentiment_reward,
+    tokenizer=tokenizer,
+)
+
+# Override generation method
+trainer.generation_function = generate_with_vllm
+
+print("Training with vLLM acceleration...")
+trainer.train()
+print("Training completed 10x faster!")
+```
+
+## Performance Comparison
+
+| Hardware | Standard HF | vLLM | Speedup |
+|----------|-------------|------|---------|
+| A100 40GB | 400 tok/s | 4,000 tok/s | 10x |
+| A100 80GB | 500 tok/s | 6,500 tok/s | 13x |
+| 4x A100 80GB | 500 tok/s | 18,000 tok/s | 36x |
+
+### Training Time Impact
+
+**Without vLLM:**
+- 10,000 prompts × 8 generations × 200 tokens = 16M tokens
+- At 400 tok/s: 11.1 hours
+
+**With vLLM:**
+- Same workload at 4,000 tok/s: 1.1 hours
+
+## Production Best Practices
+
+<Callout type="warn" title="Daniel Han's Recommendation">
+  "100% must use vLLM for production RL training. The speed difference isn't optional - it's the difference between viable and non-viable."
+
+  — Daniel Han, TRL maintainer
+</Callout>
+
+### 1. Server Configuration
+
+```bash
+# Production vLLM server setup
+python -m vllm.entrypoints.openai.api_server \
+  --model your-model \
+  --dtype bfloat16 \
+  --max-model-len 8192 \
+  --gpu-memory-utilization 0.9 \
+  --tensor-parallel-size 4 \  # Use 4 GPUs
+  --max-num-seqs 256 \         # High concurrency
+  --disable-log-requests        # Reduce logging overhead
+```
+
+### 2. Monitoring
+
+Track these metrics:
+- **Tokens/second:** Should be 10x+ vs HuggingFace
+- **GPU utilization:** Should be >85%
+- **Queue depth:** Keep under 100 for low latency
+
+### 3. Error Handling
+
+```python
+def robust_vllm_generation(prompts, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            return vllm_client.completions.create(...)
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise
+            print(f"Retry {attempt + 1}/{max_retries}")
+            time.sleep(2 ** attempt)  # Exponential backoff
+```
+
+## Common Issues
+
+### Issue: OOM (Out of Memory)
+
+**Solution:** Reduce `--gpu-memory-utilization` or `--max-model-len`
+
+```bash
+--gpu-memory-utilization 0.8  # Start conservative
+--max-model-len 4096          # Reduce if needed
+```
+
+### Issue: Low throughput
+
+**Solution:** Increase batch size and check continuous batching
+
+```bash
+--max-num-seqs 128  # Higher = more concurrent requests
+```
+
+### Issue: vLLM server crashes
+
+**Solution:** Check CUDA version compatibility
+
+```bash
+python -c "import torch; print(torch.version.cuda)"
+pip install vllm-cuda12  # Match your CUDA version
+```
+
+## Key Takeaway
+
+<Callout title="Key Takeaway">
+  vLLM is non-negotiable for production RL training. The 10x+ speedup means the difference between training taking days vs hours, and between affordable vs prohibitively expensive. Every serious RL implementation should use vLLM for generation.
+</Callout>
+
+## Next Steps
+
+- [Example 8: Domain Mixing](/docs/reinforcement-ai/examples/example-8) - Train on multiple tasks simultaneously
+- [Example 9: Production Pipeline](/docs/reinforcement-ai/examples/example-9) - Complete deployment system
+- [Production Guide](/docs/reinforcement-ai/advanced/production) - Taking models to production

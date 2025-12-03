@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 1200">
+  <rect width="1100" height="1200" fill="#0f172a"/>
+  <text x="550" y="35" font-size="24" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Flowchart: Multi-Metric Rewards (example4.py)</text>
+
+  <!-- Start -->
+  <ellipse cx="550" cy="90" rx="70" ry="35" fill="#10b981" stroke="#34d399" stroke-width="2"/>
+  <text x="550" y="98" font-size="14" fill="white" text-anchor="middle" font-weight="bold">START</text>
+
+  <path d="M 550 125 L 550 160" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Setup -->
+  <rect x="400" y="160" width="300" height="70" fill="#3b82f6" rx="8"/>
+  <text x="550" y="190" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Setup Model &amp; Tools</text>
+  <text x="550" y="210" font-size="11" fill="#dbeafe" text-anchor="middle">GPT-2 + sentiment analyzer</text>
+
+  <path d="M 550 230 L 550 270" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Define Weights -->
+  <rect x="350" y="270" width="400" height="90" fill="#8b5cf6" rx="8"/>
+  <text x="550" y="300" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Define Reward Weights</text>
+  <text x="550" y="325" font-size="11" fill="#e9d5ff" text-anchor="middle">w_sentiment = 0.4, w_length = 0.3,</text>
+  <text x="550" y="345" font-size="11" fill="#e9d5ff" text-anchor="middle">w_diversity = 0.3</text>
+
+  <path d="M 550 360 L 550 400" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Training Loop -->
+  <rect x="350" y="400" width="400" height="50" fill="#8b5cf6" rx="8"/>
+  <text x="550" y="430" font-size="14" fill="white" text-anchor="middle" font-weight="bold">Training Loop (12000 steps)</text>
+
+  <path d="M 550 450 L 550 490" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Generate -->
+  <rect x="400" y="490" width="300" height="70" fill="#fbbf24" rx="8"/>
+  <text x="550" y="520" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Generate Responses</text>
+  <text x="550" y="540" font-size="11" fill="#fef3c7" text-anchor="middle">Batch of outputs</text>
+
+  <path d="M 550 560 L 550 600" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Reward Function -->
+  <rect x="50" y="600" width="1000" height="380" fill="#1e293b" stroke="#ec4899" stroke-width="3" rx="10"/>
+  <text x="550" y="635" font-size="16" fill="#ec4899" font-weight="bold" text-anchor="middle">MULTI-METRIC REWARD FUNCTION</text>
+
+  <!-- Metric 1 -->
+  <rect x="80" y="665" width="300" height="140" fill="#0f172a" stroke="#10b981" stroke-width="2" rx="6"/>
+  <text x="230" y="695" font-size="13" fill="#10b981" text-anchor="middle" font-weight="bold">1. Sentiment Score</text>
+  <text x="110" y="725" font-size="11" fill="#cbd5e1">analyzer(response).score</text>
+  <text x="110" y="745" font-size="11" fill="#10b981">Positive (0.7-1.0)  +1.0</text>
+  <text x="110" y="765" font-size="11" fill="#fbbf24">Neutral (0.3-0.7)  0.0</text>
+  <text x="110" y="785" font-size="11" fill="#ef4444">Negative (&lt;0.3)  -1.0</text>
+
+  <!-- Metric 2 -->
+  <rect x="400" y="665" width="300" height="140" fill="#0f172a" stroke="#3b82f6" stroke-width="2" rx="6"/>
+  <text x="550" y="695" font-size="13" fill="#3b82f6" text-anchor="middle" font-weight="bold">2. Length Score</text>
+  <text x="430" y="725" font-size="11" fill="#cbd5e1">actual = len(tokens)</text>
+  <text x="430" y="745" font-size="11" fill="#cbd5e1">target = 60</text>
+  <text x="430" y="765" font-size="11" fill="#10b981">within 10  +1.0</text>
+  <text x="430" y="785" font-size="11" fill="#ef4444">off by &gt;20  -0.5</text>
+
+  <!-- Metric 3 -->
+  <rect x="720" y="665" width="300" height="140" fill="#0f172a" stroke="#fbbf24" stroke-width="2" rx="6"/>
+  <text x="870" y="695" font-size="13" fill="#fbbf24" text-anchor="middle" font-weight="bold">3. Diversity Score</text>
+  <text x="750" y="725" font-size="11" fill="#cbd5e1">unique_words / total_words</text>
+  <text x="750" y="745" font-size="11" fill="#10b981">High (0.7+)  +1.0</text>
+  <text x="750" y="765" font-size="11" fill="#fbbf24">Medium (0.5-0.7)  +0.5</text>
+  <text x="750" y="785" font-size="11" fill="#ef4444">Low (&lt;0.5)  -0.3</text>
+
+  <!-- Combine -->
+  <rect x="200" y="835" width="700" height="110" fill="#0f172a" stroke="#ec4899" stroke-width="2" rx="6"/>
+  <text x="550" y="865" font-size="14" fill="#ec4899" text-anchor="middle" font-weight="bold">4. Weighted Combination</text>
+  <text x="230" y="895" font-size="12" fill="#cbd5e1">total_reward = (w_sentiment  r_sentiment)</text>
+  <text x="350" y="915" font-size="12" fill="#cbd5e1">+ (w_length  r_length)</text>
+  <text x="350" y="935" font-size="12" fill="#cbd5e1">+ (w_diversity  r_diversity)</text>
+
+  <path d="M 550 980 L 550 1020" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Normalize -->
+  <rect x="400" y="1020" width="300" height="70" fill="#06b6d4" rx="8"/>
+  <text x="550" y="1050" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Compute Advantages</text>
+  <text x="550" y="1070" font-size="11" fill="#cffafe" text-anchor="middle">Z-score normalization</text>
+
+  <path d="M 550 1090 L 550 1130" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Update -->
+  <rect x="400" y="1130" width="300" height="50" fill="#8b5cf6" rx="8"/>
+  <text x="550" y="1160" font-size="13" fill="white" text-anchor="middle" font-weight="bold">GRPO Update</text>
+
+  <!-- Loop -->
+  <path d="M 350 450 L 250 450 L 250 525 L 400 525" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="5,5"/>
+  <text x="270" y="485" font-size="11" fill="#fbbf24" font-weight="bold">Loop</text>
+
+  <!-- End -->
+  <path d="M 550 1180 L 550 1190" stroke="#10b981" stroke-width="2"/>
+  <ellipse cx="550" cy="1192" rx="50" ry="8" fill="#ef4444" stroke="#f87171" stroke-width="2"/>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#10b981"/>
+    </marker>
+  </defs>
+</svg>

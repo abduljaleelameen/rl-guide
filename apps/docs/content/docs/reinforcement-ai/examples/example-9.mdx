@@ -1,0 +1,483 @@
+---
+title: 'Example 9: Production Pipeline'
+description: Complete end-to-end system with monitoring, A/B testing, and rollback
+icon: Rocket
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+<div className="flex items-center justify-between mb-6">
+  <div className="text-3xl font-bold text-green-500">Example 9: Production Pipeline</div>
+  <div className="px-4 py-2 rounded-full bg-green-500 text-white font-bold">
+    ⏱️ 60 minutes
+  </div>
+</div>
+
+**Goal:** Build an end-to-end production system with monitoring, A/B testing, automated rollback, and continuous improvement.
+
+## For Non-Technical People
+
+<Callout type="info">
+  Think of this like launching a new restaurant menu. You don't just serve the new dishes to everyone immediately - you test them with a small group first, monitor customer feedback, track which dishes perform best, and keep the old menu ready in case people hate the new one. This example teaches that same cautious, data-driven approach for AI models.
+
+  **Real-world impact:** Prevent catastrophic failures, roll back bad models automatically, continuously improve based on real user feedback.
+</Callout>
+
+![Production RL Pipeline](/reinforcement-ai/27-production-rl-pipeline.svg)
+
+## For Technical People
+
+<div className="p-6 rounded-lg bg-green-500/10 border-l-4 border-green-500 my-6">
+  <div className="mb-4">
+    Production RL requires infrastructure beyond training: checkpointing, validation pipelines, canary deployments, metric tracking, automated rollback, and continuous learning loops. This implementation follows the patterns used by companies like Anthropic and OpenAI.
+  </div>
+  <div>
+    <strong>Technical Details:</strong>
+    <ul className="mt-2 ml-4 list-disc">
+      <li><strong>Canary Deployment:</strong> Gradual rollout (5% → 25% → 100%)</li>
+      <li><strong>A/B Testing:</strong> Statistical significance testing for model comparison</li>
+      <li><strong>Automated Rollback:</strong> Watchdog detects degradation and reverts</li>
+      <li><strong>Continuous Monitoring:</strong> Real-time metrics, logging, alerting</li>
+    </ul>
+  </div>
+</div>
+
+## Complete Production Pipeline
+
+<Tabs items={['Training', 'Deployment', 'Monitoring']}>
+  <Tab value="Training">
+    ### Training Phase with Checkpointing
+
+    ```python title="training_pipeline.py"
+    import wandb
+    from trl import GRPOConfig, GRPOTrainer
+    from pathlib import Path
+
+    # Initialize experiment tracking
+    wandb.init(
+        project="production-rl",
+        name="grpo-v1.2",
+        config={
+            "learning_rate": 5e-6,
+            "num_generations": 12,
+            "kl_coef": 0.05,
+        }
+    )
+
+    config = GRPOConfig(
+        output_dir="./checkpoints",
+        num_train_epochs=5,
+        per_device_train_batch_size=4,
+        gradient_accumulation_steps=8,
+        num_generations=12,
+
+        # Checkpointing
+        save_strategy="steps",
+        save_steps=100,
+        save_total_limit=10,  # Keep only last 10 checkpoints
+
+        # Evaluation
+        eval_strategy="steps",
+        eval_steps=50,
+        load_best_model_at_end=True,
+        metric_for_best_model="eval_reward",
+
+        # Logging
+        logging_steps=10,
+        report_to="wandb",
+
+        # Early stopping
+        early_stopping_patience=5,
+    )
+
+    trainer = GRPOTrainer(
+        model=model,
+        args=config,
+        train_dataset=train_dataset,
+        eval_dataset=val_dataset,
+        reward_function=reward_function,
+        tokenizer=tokenizer,
+    )
+
+    # Custom callback for validation monitoring
+    class ValidationCallback(TrainerCallback):
+        def on_evaluate(self, args, state, control, metrics, **kwargs):
+            # Check if validation reward is improving
+            current_reward = metrics.get('eval_reward', 0)
+
+            # Log to wandb
+            wandb.log({
+                "val_reward": current_reward,
+                "step": state.global_step,
+            })
+
+            # Alert if reward drops significantly
+            if current_reward < state.best_metric * 0.9:
+                print("⚠️ WARNING: Validation reward dropped 10%+")
+
+            return control
+
+    trainer.add_callback(ValidationCallback())
+
+    # Train with checkpointing and monitoring
+    print("Starting production training...")
+    trainer.train()
+
+    # Save final model
+    trainer.save_model("./final_model")
+    wandb.finish()
+    ```
+  </Tab>
+
+  <Tab value="Deployment">
+    ### Canary Deployment with A/B Testing
+
+    ```python title="deployment_pipeline.py"
+    import requests
+    from datetime import datetime
+    import json
+
+    class ModelDeployment:
+        def __init__(self, baseline_url, candidate_url):
+            self.baseline_url = baseline_url
+            self.candidate_url = candidate_url
+            self.traffic_split = 0.05  # Start with 5%
+            self.metrics = {
+                'baseline': [],
+                'candidate': [],
+            }
+
+        def route_request(self, prompt):
+            """Route requests with traffic splitting"""
+            import random
+
+            # Traffic splitting
+            use_candidate = random.random() < self.traffic_split
+
+            if use_candidate:
+                response = requests.post(
+                    f"{self.candidate_url}/generate",
+                    json={"prompt": prompt}
+                )
+                model_version = "candidate"
+            else:
+                response = requests.post(
+                    f"{self.baseline_url}/generate",
+                    json={"prompt": prompt}
+                )
+                model_version = "baseline"
+
+            # Log the interaction
+            self.log_interaction(
+                prompt=prompt,
+                response=response.json(),
+                model=model_version,
+                timestamp=datetime.now()
+            )
+
+            return response.json()
+
+        def log_interaction(self, prompt, response, model, timestamp):
+            """Log every interaction for analysis"""
+            log_entry = {
+                'prompt': prompt,
+                'response': response,
+                'model': model,
+                'timestamp': timestamp.isoformat(),
+                'latency': response.get('latency_ms'),
+            }
+
+            with open(f'logs/{model}_interactions.jsonl', 'a') as f:
+                f.write(json.dumps(log_entry) + '\n')
+
+        def calculate_statistical_significance(self):
+            """Check if candidate is significantly better"""
+            from scipy import stats
+
+            baseline_rewards = self.metrics['baseline']
+            candidate_rewards = self.metrics['candidate']
+
+            if len(baseline_rewards) < 100 or len(candidate_rewards) < 100:
+                return False, "Insufficient data"
+
+            # T-test
+            t_stat, p_value = stats.ttest_ind(candidate_rewards, baseline_rewards)
+
+            # Candidate must be significantly better (p < 0.05)
+            is_better = (
+                p_value < 0.05 and
+                np.mean(candidate_rewards) > np.mean(baseline_rewards)
+            )
+
+            return is_better, p_value
+
+        def gradual_rollout(self):
+            """Gradually increase traffic to candidate"""
+            # 5% → 25% → 50% → 100%
+            rollout_stages = [0.05, 0.25, 0.50, 1.00]
+
+            for stage in rollout_stages:
+                print(f"Setting traffic to {stage * 100}% candidate")
+                self.traffic_split = stage
+
+                # Run for N requests
+                for _ in range(1000):
+                    # Simulate traffic
+                    self.route_request("test prompt")
+
+                # Check metrics
+                is_better, p_value = self.calculate_statistical_significance()
+
+                if not is_better:
+                    print(f"⚠️ Rollback! Candidate not better (p={p_value:.3f})")
+                    self.rollback()
+                    return False
+
+                print(f"✅ Stage {stage} passed (p={p_value:.3f})")
+
+            print("🚀 Full rollout complete!")
+            return True
+
+        def rollback(self):
+            """Immediate rollback to baseline"""
+            print("🔄 Rolling back to baseline model...")
+            self.traffic_split = 0.0
+
+            # Alert team
+            self.send_alert(
+                severity="high",
+                message="Candidate model rolled back due to poor performance"
+            )
+
+    # Example usage
+    deployment = ModelDeployment(
+        baseline_url="http://baseline-server:8000",
+        candidate_url="http://candidate-server:8000"
+    )
+
+    # Start gradual rollout
+    success = deployment.gradual_rollout()
+    ```
+  </Tab>
+
+  <Tab value="Monitoring">
+    ### Real-Time Monitoring Dashboard
+
+    ```python title="monitoring.py"
+    import prometheus_client
+    from prometheus_client import Counter, Histogram, Gauge
+    import time
+
+    # Define metrics
+    request_count = Counter(
+        'model_requests_total',
+        'Total requests',
+        ['model_version', 'status']
+    )
+
+    request_latency = Histogram(
+        'model_latency_seconds',
+        'Request latency',
+        ['model_version']
+    )
+
+    reward_metric = Gauge(
+        'model_reward_current',
+        'Current reward score',
+        ['model_version']
+    )
+
+    class ProductionMonitor:
+        def __init__(self, alert_webhook):
+            self.alert_webhook = alert_webhook
+            self.reward_history = []
+            self.alert_threshold = 0.8  # 80% of baseline
+
+        def track_request(self, model_version, prompt, response, reward):
+            """Track every request"""
+            # Prometheus metrics
+            request_count.labels(
+                model_version=model_version,
+                status="success"
+            ).inc()
+
+            request_latency.labels(
+                model_version=model_version
+            ).observe(response['latency_ms'] / 1000)
+
+            reward_metric.labels(
+                model_version=model_version
+            ).set(reward)
+
+            # Check for anomalies
+            self.check_anomalies(model_version, reward)
+
+        def check_anomalies(self, model_version, current_reward):
+            """Detect degradation"""
+            if len(self.reward_history) < 100:
+                self.reward_history.append(current_reward)
+                return
+
+            # Rolling average
+            avg_reward = np.mean(self.reward_history[-100:])
+
+            # Alert if current reward drops significantly
+            if current_reward < avg_reward * self.alert_threshold:
+                self.send_alert(
+                    severity="critical",
+                    message=f"Reward dropped {((avg_reward - current_reward) / avg_reward) * 100:.1f}%",
+                    model=model_version,
+                    current_reward=current_reward,
+                    baseline_reward=avg_reward
+                )
+
+            self.reward_history.append(current_reward)
+
+        def send_alert(self, severity, message, **kwargs):
+            """Send alert to Slack/PagerDuty"""
+            alert_data = {
+                'severity': severity,
+                'message': message,
+                'timestamp': datetime.now().isoformat(),
+                **kwargs
+            }
+
+            # Send to webhook (Slack, PagerDuty, etc.)
+            requests.post(self.alert_webhook, json=alert_data)
+
+            print(f"🚨 ALERT [{severity}]: {message}")
+
+    # Start Prometheus server
+    prometheus_client.start_http_server(9090)
+    print("Monitoring server started on :9090")
+    ```
+  </Tab>
+</Tabs>
+
+## Production Checklist
+
+<Steps>
+  <Step>
+    ### Training Phase
+    - ✅ Wandb or MLflow tracking enabled
+    - ✅ Checkpoint every 100 steps
+    - ✅ Validation set monitoring
+    - ✅ Early stopping configured
+    - ✅ Best model automatically saved
+  </Step>
+
+  <Step>
+    ### Pre-Deployment Testing
+    - ✅ Benchmark suite passed (accuracy, latency, safety)
+    - ✅ Load testing completed (1000 req/s)
+    - ✅ Red team testing (adversarial prompts)
+    - ✅ Reward distribution analysis
+  </Step>
+
+  <Step>
+    ### Deployment
+    - ✅ Canary deployment (5% traffic first)
+    - ✅ A/B test statistical significance
+    - ✅ Rollback procedure tested
+    - ✅ Monitoring dashboards configured
+  </Step>
+
+  <Step>
+    ### Post-Deployment
+    - ✅ Real-time metric tracking
+    - ✅ User feedback collection
+    - ✅ Continuous evaluation on live data
+    - ✅ Weekly model retraining pipeline
+  </Step>
+</Steps>
+
+## Monitoring Metrics
+
+### Critical Metrics
+
+| Metric | Threshold | Action |
+|--------|-----------|--------|
+| Avg Reward | < 80% of baseline | Rollback |
+| Latency p99 | > 2 seconds | Alert |
+| Error Rate | > 1% | Investigate |
+| Token/sec | < 500 | Scale up |
+
+### Business Metrics
+
+- User satisfaction (thumbs up/down)
+- Task completion rate
+- Average session length
+- Retention rate
+
+## Automated Rollback
+
+```python
+class AutoRollback:
+    def __init__(self, baseline_model, candidate_model):
+        self.baseline = baseline_model
+        self.candidate = candidate_model
+        self.monitoring_window = 1000  # requests
+
+    def monitor_and_decide(self):
+        """Continuously monitor and auto-rollback if needed"""
+        while True:
+            # Get recent metrics
+            baseline_metrics = self.get_recent_metrics('baseline')
+            candidate_metrics = self.get_recent_metrics('candidate')
+
+            # Decision criteria
+            should_rollback = (
+                candidate_metrics['avg_reward'] < baseline_metrics['avg_reward'] * 0.9 or
+                candidate_metrics['error_rate'] > 0.01 or
+                candidate_metrics['latency_p99'] > 2.0
+            )
+
+            if should_rollback:
+                print("⚠️ Auto-rollback triggered!")
+                self.execute_rollback()
+                self.send_alert("Automatic rollback executed")
+
+            time.sleep(60)  # Check every minute
+```
+
+## Key Takeaway
+
+<Callout title="Key Takeaway">
+  Production RL deployment is 90% infrastructure and 10% model training. Without proper monitoring, rollback capabilities, and gradual rollout, you're deploying blind. This pipeline prevents catastrophic failures and enables continuous improvement.
+</Callout>
+
+## Real-World Example: DeepSeek
+
+DeepSeek's production pipeline reportedly includes:
+1. **Weekly retraining** on fresh data
+2. **Canary deployment** to 2% of users first
+3. **Automated rollback** if user satisfaction drops
+4. **Domain-specific monitoring** (math, code, reasoning)
+5. **Continuous human evaluation** on edge cases
+
+## Common Production Issues
+
+### Issue: Model drift over time
+**Solution:** Weekly retraining on fresh data
+
+### Issue: Catastrophic failures in production
+**Solution:** Extensive pre-deployment testing + canary rollout
+
+### Issue: Unclear why model was rolled back
+**Solution:** Comprehensive logging and metric tracking
+
+## Next Steps
+
+Congratulations! You've completed all 9 examples. You now know:
+
+- Basic reward functions (sentiment, verification, length)
+- Advanced techniques (proximity, multi-metric, custom tags)
+- Production systems (vLLM, domain mixing, deployment pipelines)
+
+Continue your journey:
+
+- [Training Debugging](/docs/reinforcement-ai/training/debugging) - Troubleshoot common issues
+- [Production Guide](/docs/reinforcement-ai/advanced/production) - Deep dive into deployment
+- [Case Studies](/docs/reinforcement-ai/advanced/case-studies) - Real-world applications

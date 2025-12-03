@@ -1,0 +1,294 @@
+---
+title: GRPO Implementation Guide
+description: Deep dive into Group Relative Policy Optimization
+icon: Rocket
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+## What is GRPO?
+
+**Group Relative Policy Optimization (GRPO)** is DeepSeek's simplified RL algorithm that removes the value model from PPO, making training faster and more memory-efficient.
+
+### Key Innovation
+
+Instead of training a separate value model to predict expected rewards, GRPO uses statistics from multiple rollouts of the same prompt:
+
+```
+Advantage = (reward - group_mean) / group_std
+```
+
+This is called **z-score normalization** or **standardization**.
+
+![GRPO Z-Score Calculation](/reinforcement-ai/17-grpo-zscore-calculation.svg)
+
+## How GRPO Works
+
+<Steps>
+  <Step>
+    ### Generate Multiple Responses
+
+    For each prompt, generate N responses (typically 4-16):
+
+    ```python
+    prompt = "What is 2+2?"
+    responses = model.generate(prompt, num_return_sequences=8)
+    # ["4", "The answer is 4", "2+2=4", "Four", ...]
+    ```
+  </Step>
+
+  <Step>
+    ### Score All Responses
+
+    Apply your reward function to all responses:
+
+    ```python
+    rewards = reward_function(prompts=[prompt]*8, outputs=responses)
+    # [+3.0, +3.0, +3.0, +2.0, +1.0, +1.0, -1.0, -2.0]
+    ```
+  </Step>
+
+  <Step>
+    ### Compute Group Statistics
+
+    Calculate mean and standard deviation:
+
+    ```python
+    mean_reward = np.mean(rewards)  # 1.25
+    std_reward = np.std(rewards)    # 1.83
+
+    advantages = (rewards - mean_reward) / std_reward
+    # [+0.96, +0.96, +0.96, +0.41, -0.14, -0.14, -1.23, -1.78]
+    ```
+  </Step>
+
+  <Step>
+    ### Update Policy
+
+    Use advantages to update the model:
+
+    ```python
+    loss = -advantages * log_probs + kl_penalty
+    loss.backward()
+    optimizer.step()
+    ```
+  </Step>
+</Steps>
+
+## GRPO vs PPO
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+  <div className="p-6 rounded-lg border-2 border-orange-500 bg-orange-500/10">
+    <h3 className="text-lg font-bold text-orange-500 mb-4">PPO (Traditional)</h3>
+
+    **Models Needed:**
+    - Policy model (being trained)
+    - Value model (predicts rewards)
+    - Reference model (frozen copy)
+    - Reward model (scores outputs)
+
+    **Advantage Calculation:**
+    ```python
+    advantage = reward - value_prediction
+    ```
+
+    **Memory:** ~4x model size
+    **Training:** Slower (two models updating)
+  </div>
+
+  <div className="p-6 rounded-lg border-2 border-green-500 bg-green-500/10">
+    <h3 className="text-lg font-bold text-green-500 mb-4">GRPO (Simplified)</h3>
+
+    **Models Needed:**
+    - Policy model (being trained)
+    - ~~Value model~~ (removed!)
+    - Reference model (frozen copy)
+    - Reward model (scores outputs)
+
+    **Advantage Calculation:**
+    ```python
+    advantage = (reward - mean) / std
+    ```
+
+    **Memory:** ~3x model size
+    **Training:** Faster (one model updating)
+  </div>
+</div>
+
+## Implementation Example
+
+Here's a complete GRPO training loop:
+
+```python
+from trl import GRPOConfig, GRPOTrainer
+from datasets import Dataset
+
+# Configuration
+config = GRPOConfig(
+    output_dir="./grpo_model",
+    num_train_epochs=3,
+    per_device_train_batch_size=1,
+
+    # GRPO-specific parameters
+    num_generations=8,  # How many responses per prompt
+    temperature=1.2,    # Sampling diversity
+
+    # Standard RL parameters
+    learning_rate=5e-6,
+    kl_coef=0.05,      # KL divergence penalty
+)
+
+# Trainer
+trainer = GRPOTrainer(
+    model=model,
+    tokenizer=tokenizer,
+    args=config,
+    train_dataset=dataset,
+    reward_function=my_reward_function,
+)
+
+# Train!
+trainer.train()
+```
+
+## Key Parameters
+
+### num_generations
+
+**What it does:** How many responses to generate per prompt
+
+**Trade-offs:**
+- **Low (2-4):** Faster, less stable estimates
+- **Medium (8-16):** Balanced
+- **High (32+):** Slower, more stable, better estimates
+
+**Recommendation:** Start with 8
+
+### temperature
+
+**What it does:** Controls response diversity
+
+**Range:** 0.0 to 2.0
+- **0.1-0.5:** Focused, deterministic (good for math/code)
+- **0.8-1.0:** Balanced
+- **1.2-2.0:** Creative, diverse (good for exploration)
+
+**Recommendation:** 1.0-1.2 for most tasks
+
+### kl_coef
+
+**What it does:** Penalty for deviating from reference model
+
+**Range:** 0.0 to 0.5
+- **0.01-0.02:** Weak constraint, more exploration
+- **0.05:** Standard (recommended)
+- **0.1-0.2:** Strong constraint, safer updates
+
+## When to Use GRPO
+
+<Callout type="info" title="Use GRPO When">
+  ✅ You want simpler training (no value model to tune)
+
+  ✅ Memory is constrained
+
+  ✅ You have compute for multiple rollouts
+
+  ✅ You're doing standard instruction tuning or alignment
+</Callout>
+
+<Callout type="warn" title="Consider PPO Instead When">
+  ⚠️ You have very sparse rewards (value model helps)
+
+  ⚠️ You can't afford multiple rollouts per prompt
+
+  ⚠️ You need the most sample-efficient algorithm
+</Callout>
+
+## Common Issues & Solutions
+
+### Issue: Rewards not improving
+
+**Solutions:**
+1. Increase `num_generations` (8 → 16)
+2. Check reward function is giving varied scores
+3. Lower `temperature` if model is too random
+4. Verify data quality
+
+### Issue: Training unstable
+
+**Solutions:**
+1. Lower `learning_rate` (5e-6 → 1e-6)
+2. Increase `kl_coef` (0.05 → 0.1)
+3. Use gradient clipping
+4. Check for reward hacking
+
+### Issue: Out of memory
+
+**Solutions:**
+1. Reduce `num_generations`
+2. Use smaller batch size
+3. Enable gradient checkpointing
+4. Use 4-bit quantization
+
+## Advanced: Custom GRPO
+
+Want to implement GRPO from scratch? Here's the core logic:
+
+```python
+def grpo_step(model, prompts, reward_fn):
+    # 1. Generate multiple responses
+    all_responses = []
+    all_log_probs = []
+
+    for prompt in prompts:
+        responses = model.generate(
+            prompt,
+            num_return_sequences=8,
+            return_log_probs=True
+        )
+        all_responses.extend(responses)
+        all_log_probs.extend([r.log_prob for r in responses])
+
+    # 2. Get rewards
+    rewards = reward_fn(prompts, all_responses)
+
+    # 3. Compute advantages (group-wise)
+    advantages = []
+    for i in range(0, len(rewards), 8):  # Process groups of 8
+        group_rewards = rewards[i:i+8]
+        mean = np.mean(group_rewards)
+        std = np.std(group_rewards) + 1e-8  # Avoid division by zero
+        group_advantages = (group_rewards - mean) / std
+        advantages.extend(group_advantages)
+
+    # 4. Compute loss
+    advantages = torch.tensor(advantages)
+    log_probs = torch.tensor(all_log_probs)
+
+    policy_loss = -(advantages * log_probs).mean()
+
+    # 5. Add KL penalty
+    ref_log_probs = reference_model.get_log_probs(...)
+    kl_penalty = 0.05 * (log_probs - ref_log_probs).mean()
+
+    loss = policy_loss + kl_penalty
+
+    # 6. Update
+    loss.backward()
+    optimizer.step()
+```
+
+## Next Steps
+
+<Cards>
+  <Card href="/docs/reinforcement-ai/examples/example-1" title="Try GRPO" icon="Code">
+    Run your first GRPO training
+  </Card>
+  <Card href="/docs/reinforcement-ai/training/debugging" title="Debugging Guide" icon="Bug">
+    Troubleshoot common issues
+  </Card>
+  <Card href="/docs/reinforcement-ai/fundamentals/ppo-grpo" title="PPO vs GRPO" icon="Sparkles">
+    Detailed algorithm comparison
+  </Card>
+</Cards>

@@ -1,0 +1,158 @@
+---
+title: Deep Dive into AI
+description: Reinforcement Learning, Kernels, Agents & Quantization - Understanding the Technology Behind Modern AI
+icon: Brain
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+# Welcome to the AI Revolution
+
+This guide breaks down complex AI concepts into digestible pieces, whether you're a seasoned developer or just curious about how modern AI works.
+
+## What You'll Learn
+
+<Cards>
+  <Card title="History & Evolution">
+    The history and evolution of open-source Large Language Models (LLMs)
+  </Card>
+  <Card title="Training Stages">
+    How models go from "basic" to "intelligent" through training
+  </Card>
+  <Card title="Open vs Closed">
+    The race between open-source and closed-source AI
+  </Card>
+  <Card title="Key Concepts">
+    Fine-tuning, reinforcement learning, and quantization
+  </Card>
+</Cards>
+
+<Callout title="Pro Tip" type="info">
+  You can experiment with AI models for free! Google Colab offers free GPUs, and Kaggle provides 30 hours of free GPU time per week. No excuses not to try!
+</Callout>
+
+## Quick Stats
+
+<div className="grid grid-cols-2 md:grid-cols-4 gap-4 my-8">
+  <div className="p-6 rounded-lg border bg-card text-center">
+    <div className="text-3xl font-bold text-primary">10M+</div>
+    <div className="text-sm text-muted-foreground mt-2">Monthly Downloads (Unsloth)</div>
+  </div>
+  <div className="p-6 rounded-lg border bg-card text-center">
+    <div className="text-3xl font-bold text-primary">40K+</div>
+    <div className="text-sm text-muted-foreground mt-2">GitHub Stars</div>
+  </div>
+  <div className="p-6 rounded-lg border bg-card text-center">
+    <div className="text-3xl font-bold text-primary">30T</div>
+    <div className="text-sm text-muted-foreground mt-2">Tokens (Llama 4)</div>
+  </div>
+  <div className="p-6 rounded-lg border bg-card text-center">
+    <div className="text-3xl font-bold text-primary">2016</div>
+    <div className="text-sm text-muted-foreground mt-2">Yann LeCun's Prediction</div>
+  </div>
+</div>
+
+## Choose Your Learning Path
+
+Whether you're a complete beginner or an experienced ML engineer, we've designed three distinct learning paths tailored to your skill level and goals.
+
+![Learning Paths Overview](/reinforcement-ai/18-learning-paths-overview.svg)
+
+<Tabs items={['Beginner', 'Intermediate', 'Advanced']}>
+  <Tab value="Beginner">
+    ### Beginner Track
+
+    **For:** Non-technical users, students, product managers
+    **Time:** 2-3 hours
+    **Prerequisites:** Basic understanding of AI concepts
+
+    **You'll Learn:**
+    - What is reinforcement learning (with real-world analogies)
+    - How reward functions work (simple examples)
+    - Your first RL model in 30 minutes (guided tutorial)
+    - Basic concepts: rewards, agents, environments
+
+    <Card href="/docs/reinforcement-ai/examples/example-1" title="Start Beginner Track">
+      Begin with Example 1: Simple Sentiment Reward
+    </Card>
+  </Tab>
+
+  <Tab value="Intermediate">
+    ### Intermediate Track
+
+    **For:** Developers, data scientists, ML practitioners
+    **Time:** 4-6 hours
+    **Prerequisites:** Python programming, basic ML knowledge
+
+    **You'll Learn:**
+    - Designing sophisticated reward functions
+    - Multi-metric evaluation systems
+    - Custom system prompts and templates
+    - PPO vs GRPO: when to use which
+
+    <Card href="/docs/reinforcement-ai/examples/example-4" title="Start Intermediate Track">
+      Begin with Example 4: Multi-Metric Rewards
+    </Card>
+  </Tab>
+
+  <Tab value="Advanced">
+    ### Advanced Track
+
+    **For:** ML engineers, researchers, production teams
+    **Time:** 8-12 hours
+    **Prerequisites:** Experience with LLM training, PyTorch
+
+    **You'll Learn:**
+    - vLLM integration for production speed
+    - Domain mixing strategies (code + reasoning)
+    - Memory optimization techniques (90% reduction)
+    - Production deployment pipelines
+
+    <Card href="/docs/reinforcement-ai/examples/example-6" title="Start Advanced Track">
+      Begin with Example 6: vLLM Integration
+    </Card>
+  </Tab>
+</Tabs>
+
+## Not sure which path to choose?
+
+<Cards>
+  <Card title="Choose BEGINNER if:">
+    - You're new to machine learning
+    - You want to understand concepts first
+    - You prefer analogies over math
+  </Card>
+  <Card title="Choose INTERMEDIATE if:">
+    - You code in Python regularly
+    - You've trained ML models before
+    - You want hands-on examples
+  </Card>
+  <Card title="Choose ADVANCED if:">
+    - You're deploying to production
+    - You need performance optimization
+    - You're comfortable with PyTorch
+  </Card>
+</Cards>
+
+<Callout title="Pro Tip" type="info">
+  You can mix and match! Many learners start with the beginner concepts, then jump to intermediate examples, and finally explore advanced optimization techniques when needed.
+</Callout>
+
+## Next Steps
+
+<Cards>
+  <Card href="/docs/reinforcement-ai/introduction/history" title="Explore AI History" icon="Clock">
+    Learn about the evolution of open-source LLMs
+  </Card>
+  <Card href="/docs/reinforcement-ai/fundamentals/rl-concepts" title="RL Fundamentals" icon="BookOpen">
+    Understand the core concepts of reinforcement learning
+  </Card>
+  <Card href="/docs/reinforcement-ai/training/stages" title="Training Stages" icon="Workflow">
+    Discover how models are trained from scratch
+  </Card>
+  <Card href="/docs/reinforcement-ai/examples/example-1" title="Start Coding" icon="Code">
+    Jump into hands-on examples
+  </Card>
+</Cards>

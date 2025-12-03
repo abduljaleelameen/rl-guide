@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#10b981" />
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="800" fill="#0f172a"/>
+
+  <!-- Title -->
+  <text x="600" y="40" font-size="28" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Reinforcement Learning Agent Loop</text>
+  <text x="600" y="70" font-size="14" fill="#94a3b8" text-anchor="middle">The Core RL Cycle</text>
+
+  <!-- Agent -->
+  <rect x="450" y="350" width="300" height="100" fill="#3b82f6" stroke="#60a5fa" stroke-width="3" rx="12"/>
+  <text x="600" y="390" font-size="22" font-weight="bold" fill="white" text-anchor="middle">AGENT</text>
+  <text x="600" y="415" font-size="14" fill="#dbeafe" text-anchor="middle">(Language Model)</text>
+
+  <!-- Environment -->
+  <rect x="450" y="150" width="300" height="100" fill="#8b5cf6" stroke="#a78bfa" stroke-width="3" rx="12"/>
+  <text x="600" y="190" font-size="22" font-weight="bold" fill="white" text-anchor="middle">ENVIRONMENT</text>
+  <text x="600" y="215" font-size="14" fill="#ede9fe" text-anchor="middle">(Task/Problem)</text>
+
+  <!-- Action Arrow (Agent  Environment) -->
+  <line x1="600" y1="350" x2="600" y2="250" stroke="#10b981" stroke-width="4" marker-end="url(#arrowhead)"/>
+  <rect x="520" y="285" width="160" height="30" fill="#1e293b" stroke="#10b981" stroke-width="2" rx="15"/>
+  <text x="600" y="305" font-size="14" font-weight="bold" fill="#10b981" text-anchor="middle">ACTION</text>
+
+  <!-- State Arrow (Environment  Agent) -->
+  <line x1="750" y1="200" x2="900" y2="200" stroke="#f59e0b" stroke-width="4"/>
+  <line x1="900" y1="200" x2="900" y2="400" stroke="#f59e0b" stroke-width="4"/>
+  <line x1="900" y1="400" x2="750" y2="400" stroke="#f59e0b" stroke-width="4" marker-end="url(#arrowhead)"/>
+  <rect x="880" y="285" width="120" height="30" fill="#1e293b" stroke="#f59e0b" stroke-width="2" rx="15"/>
+  <text x="940" y="305" font-size="14" font-weight="bold" fill="#f59e0b" text-anchor="middle">STATE</text>
+
+  <!-- Reward Arrow (Environment  Agent, left side) -->
+  <line x1="450" y1="200" x2="300" y2="200" stroke="#ec4899" stroke-width="4"/>
+  <line x1="300" y1="200" x2="300" y2="400" stroke="#ec4899" stroke-width="4"/>
+  <line x1="300" y1="400" x2="450" y2="400" stroke="#ec4899" stroke-width="4" marker-end="url(#arrowhead)"/>
+  <rect x="180" y="285" width="140" height="30" fill="#1e293b" stroke="#ec4899" stroke-width="2" rx="15"/>
+  <text x="250" y="305" font-size="14" font-weight="bold" fill="#ec4899" text-anchor="middle">REWARD</text>
+
+  <!-- Step Labels -->
+  <text x="620" y="280" font-size="12" fill="#cbd5e1" text-anchor="start">1. Generate</text>
+  <text x="950" y="300" font-size="12" fill="#cbd5e1" text-anchor="start">2. Observe</text>
+  <text x="150" y="300" font-size="12" fill="#cbd5e1" text-anchor="end">3. Evaluate</text>
+
+  <!-- Example Box -->
+  <rect x="100" y="550" width="1000" height="200" fill="#1e293b" stroke="#334155" stroke-width="2" rx="8"/>
+  <text x="120" y="585" font-size="16" font-weight="bold" fill="#e2e8f0">Example: Math Problem Solving</text>
+
+  <text x="140" y="620" font-size="13" fill="#10b981" font-weight="bold">ACTION:</text>
+  <text x="220" y="620" font-size="13" fill="#cbd5e1">Model generates "The answer is 42"</text>
+
+  <text x="140" y="650" font-size="13" fill="#f59e0b" font-weight="bold">STATE:</text>
+  <text x="220" y="650" font-size="13" fill="#cbd5e1">Next prompt: "Is 42 correct for 67?"</text>
+
+  <text x="140" y="680" font-size="13" fill="#ec4899" font-weight="bold">REWARD:</text>
+  <text x="220" y="680" font-size="13" fill="#cbd5e1">+3.0 (correct answer!)</text>
+
+  <text x="140" y="720" font-size="12" fill="#94a3b8" font-style="italic">The model learns: "Generating 42 for 67 gives high reward"  repeats this behavior</text>
+
+</svg>

@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1100">
+  <rect width="1000" height="1100" fill="#0f172a"/>
+  <text x="500" y="35" font-size="24" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Flowchart: Length Control (example2.py)</text>
+
+  <!-- Start -->
+  <ellipse cx="500" cy="90" rx="70" ry="35" fill="#10b981" stroke="#34d399" stroke-width="2"/>
+  <text x="500" y="98" font-size="14" fill="white" text-anchor="middle" font-weight="bold">START</text>
+
+  <path d="M 500 125 L 500 160" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Setup -->
+  <rect x="350" y="160" width="300" height="70" fill="#3b82f6" rx="8"/>
+  <text x="500" y="190" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Setup Model &amp; Dataset</text>
+  <text x="500" y="210" font-size="11" fill="#dbeafe" text-anchor="middle">GPT-2 + prompt dataset</text>
+
+  <path d="M 500 230 L 500 270" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Set Target -->
+  <rect x="350" y="270" width="300" height="70" fill="#8b5cf6" rx="8"/>
+  <text x="500" y="300" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Define Target Length</text>
+  <text x="500" y="320" font-size="11" fill="#e9d5ff" text-anchor="middle">target_length = 50 tokens</text>
+
+  <path d="M 500 340 L 500 380" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Training Loop -->
+  <rect x="300" y="380" width="400" height="50" fill="#8b5cf6" rx="8"/>
+  <text x="500" y="410" font-size="14" fill="white" text-anchor="middle" font-weight="bold">Training Loop (10,000 steps)</text>
+
+  <path d="M 500 430 L 500 470" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Generate -->
+  <rect x="350" y="470" width="300" height="70" fill="#fbbf24" rx="8"/>
+  <text x="500" y="500" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Generate Response</text>
+  <text x="500" y="520" font-size="11" fill="#fef3c7" text-anchor="middle">response = model.generate(prompt)</text>
+
+  <path d="M 500 540 L 500 580" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Reward Function -->
+  <rect x="50" y="580" width="900" height="250" fill="#1e293b" stroke="#ec4899" stroke-width="3" rx="10"/>
+  <text x="500" y="615" font-size="16" fill="#ec4899" font-weight="bold" text-anchor="middle">LENGTH CONTROL REWARD FUNCTION</text>
+
+  <rect x="100" y="645" width="350" height="150" fill="#0f172a" stroke="#10b981" stroke-width="2" rx="6"/>
+  <text x="275" y="675" font-size="13" fill="#10b981" text-anchor="middle" font-weight="bold">1. Count Tokens</text>
+  <text x="130" y="705" font-size="11" fill="#cbd5e1">actual_length = len(tokenize(response))</text>
+  <text x="130" y="730" font-size="11" fill="#cbd5e1">Calculate deviation:</text>
+  <text x="130" y="750" font-size="11" fill="#fbbf24">deviation = |actual_length - target_length|</text>
+  <text x="130" y="770" font-size="11" fill="#94a3b8">Example: |55 - 50| = 5 tokens off</text>
+
+  <rect x="550" y="645" width="350" height="150" fill="#0f172a" stroke="#10b981" stroke-width="2" rx="6"/>
+  <text x="725" y="675" font-size="13" fill="#10b981" text-anchor="middle" font-weight="bold">2. Calculate Reward</text>
+  <text x="580" y="705" font-size="11" fill="#cbd5e1">Graduated penalty:</text>
+  <text x="580" y="730" font-size="11" fill="#10b981">if deviation &lt; 5: reward = +1.0</text>
+  <text x="580" y="750" font-size="11" fill="#fbbf24">elif deviation &lt; 10: reward = +0.5</text>
+  <text x="580" y="770" font-size="11" fill="#ef4444">else: reward = -0.5</text>
+
+  <path d="M 500 830 L 500 870" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Normalize -->
+  <rect x="350" y="870" width="300" height="70" fill="#06b6d4" rx="8"/>
+  <text x="500" y="900" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Normalize Rewards</text>
+  <text x="500" y="920" font-size="11" fill="#cffafe" text-anchor="middle">Z-score normalization</text>
+
+  <path d="M 500 940 L 500 980" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Update Policy -->
+  <rect x="350" y="980" width="300" height="70" fill="#8b5cf6" rx="8"/>
+  <text x="500" y="1010" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Update Policy (GRPO)</text>
+  <text x="500" y="1030" font-size="11" fill="#e9d5ff" text-anchor="middle">Favor responses near target length</text>
+
+  <!-- Loop back -->
+  <path d="M 300 430 L 200 430 L 200 505 L 350 505" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="5,5"/>
+  <text x="220" y="465" font-size="11" fill="#fbbf24" font-weight="bold">Loop</text>
+
+  <path d="M 500 1050 L 500 1070" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- End -->
+  <ellipse cx="500" cy="1070" rx="70" ry="20" fill="#ef4444" stroke="#f87171" stroke-width="2"/>
+  <text x="500" y="1076" font-size="14" fill="white" text-anchor="middle" font-weight="bold">END</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#10b981"/>
+    </marker>
+  </defs>
+</svg>

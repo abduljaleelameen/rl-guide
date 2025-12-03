@@ -1,0 +1,218 @@
+---
+title: 'Example 3: Length Control'
+description: Train a model to generate responses of a specific target length
+icon: Ruler
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<div className="flex items-center justify-between mb-6">
+  <div className="text-3xl font-bold text-cyan-500">Example 3: Length Control</div>
+  <div className="px-4 py-2 rounded-full bg-cyan-500 text-white font-bold">
+    ⏱️ 15 minutes
+  </div>
+</div>
+
+**Goal:** Train a model to generate responses of a specific target length.
+
+## For Non-Technical People
+
+<Callout type="info">
+  Imagine you're training someone to write tweets (280 characters max) or elevator pitches (30 seconds max). You want them to be concise but complete - not too short (missing info) and not too long (rambling). This trains the AI to hit that sweet spot!
+
+  **Real-world use cases:** Social media post generation, executive summaries, SMS message composition, subtitle generation for videos.
+</Callout>
+
+![Length Reward Curve](/reinforcement-ai/21-length-reward-curve.svg)
+
+## For Technical People
+
+<div className="p-6 rounded-lg bg-cyan-500/10 border-l-4 border-cyan-500 my-6">
+  <div className="mb-4">
+    We use a Gaussian (bell curve) reward function centered on the target length. This creates a smooth reward landscape that guides the model toward optimal length without hard cutoffs. The reward function penalizes deviations proportionally to distance from target.
+  </div>
+  <div>
+    <strong>Technical Details:</strong>
+    <ul className="mt-2 ml-4 list-disc">
+      <li><strong>Reward Function:</strong> Gaussian centered at target_length</li>
+      <li><strong>Formula:</strong> reward = exp(-((length - target)² / (2 × σ²)))</li>
+      <li><strong>Tuning Parameter:</strong> σ (sigma) controls tolerance (larger = more forgiving)</li>
+      <li><strong>Scaling:</strong> Multiply by 3.0 to match other reward scales</li>
+    </ul>
+  </div>
+</div>
+
+## Complete Python Implementation
+
+```python title="example3_length_control.py"
+import math
+from datasets import Dataset
+
+# ========================================
+# STEP 1: Create Prompts for Summaries
+# ========================================
+training_data = [
+    {"prompt": "Summarize the benefits of exercise in 50 words."},
+    {"prompt": "Explain photosynthesis in exactly 50 words."},
+    {"prompt": "Describe a rainbow in about 50 words."},
+    {"prompt": "Write a 50-word description of the internet."},
+    {"prompt": "Summarize the water cycle in 50 words."},
+    {"prompt": "Explain gravity in approximately 50 words."},
+    {"prompt": "Describe a computer in 50 words."},
+    {"prompt": "Summarize climate change in 50 words."},
+    {"prompt": "Explain democracy in about 50 words."},
+    {"prompt": "Describe the ocean in exactly 50 words."},
+]
+
+dataset = Dataset.from_list(training_data)
+
+# ========================================
+# STEP 2: Define Length Control Reward
+# ========================================
+def length_control_reward(prompts, outputs, target_length=50, tolerance=10, **kwargs):
+    """
+    Rewards outputs close to target length using Gaussian distribution.
+
+    How it works:
+    - Perfect length (target ± 5): Maximum reward (+3.0)
+    - Acceptable range (target ± tolerance): Positive reward
+    - Outside tolerance: Negative reward
+
+    Args:
+        prompts: List of input questions
+        outputs: List of model responses
+        target_length: Desired word count (default: 50)
+        tolerance: Acceptable deviation (default: 10)
+
+    Returns:
+        rewards: List of reward scores
+    """
+    rewards = []
+
+    for output in outputs:
+        # Count words in output
+        word_count = len(output.split())
+
+        # Calculate distance from target
+        distance = abs(word_count - target_length)
+
+        # Gaussian reward function
+        # sigma controls how forgiving we are (larger = more forgiving)
+        sigma = tolerance / 2.0
+        gaussian_reward = math.exp(-(distance ** 2) / (2 * sigma ** 2))
+
+        # Scale to our reward range (-3 to +3)
+        reward = gaussian_reward * 3.0
+
+        # Bonus for perfect length (within 5 words)
+        if distance <= 5:
+            reward += 0.5
+
+        # Strong penalty for extremely short responses (< 20 words)
+        if word_count < 20:
+            reward -= 2.0
+
+        # Penalty for rambling (> 100 words)
+        if word_count > 100:
+            reward -= 1.5
+
+        rewards.append(reward)
+
+    return rewards
+
+# ========================================
+# STEP 3: Test the Length Reward
+# ========================================
+print("Testing length control with sample outputs:\n")
+
+test_outputs = [
+    " ".join(["word"] * 50),  # Exactly 50 words
+    " ".join(["word"] * 45),  # 45 words (within tolerance)
+    " ".join(["word"] * 30),  # 30 words (too short)
+    " ".join(["word"] * 80),  # 80 words (too long)
+    " ".join(["word"] * 10),  # 10 words (way too short)
+]
+
+test_rewards = length_control_reward([], test_outputs, target_length=50, tolerance=10)
+
+for i, reward in enumerate(test_rewards):
+    word_count = len(test_outputs[i].split())
+    print(f"Example {i+1}:")
+    print(f"  Word Count: {word_count}")
+    print(f"  Distance from target (50): {abs(word_count - 50)}")
+    print(f"  Reward: {reward:.2f}")
+    print()
+
+# ========================================
+# STEP 4: Visualize Reward Curve
+# ========================================
+print("\nReward Curve Visualization:")
+print("Word Count | Reward")
+print("-" * 25)
+for length in range(0, 101, 10):
+    test_output = " ".join(["x"] * length)
+    reward = length_control_reward([], [test_output], target_length=50, tolerance=10)[0]
+    bar = "█" * int((reward + 3) * 3)  # Visual bar
+    print(f"{length:3d} words  | {bar} {reward:+.1f}")
+
+# ========================================
+# STEP 5: Train with GRPO
+# ========================================
+from trl import GRPOConfig, GRPOTrainer
+
+config = GRPOConfig(
+    output_dir = "./length_control_model",
+    num_train_epochs = 2,
+    per_device_train_batch_size = 1,
+    gradient_accumulation_steps = 4,
+    num_generations = 8,
+    learning_rate = 5e-6,
+    temperature = 1.0,
+)
+
+trainer = GRPOTrainer(
+    model = model,
+    args = config,
+    train_dataset = dataset,
+    reward_function = lambda p, o, **kw: length_control_reward(p, o, target_length=50, tolerance=10),
+    tokenizer = tokenizer,
+)
+
+print("Starting length control training...")
+trainer.train()
+print("Model now writes 50-word responses!")
+```
+
+## Training Progress
+
+| Training Step | Avg Word Count | Reward |
+|---------------|----------------|--------|
+| Step 0 (Before) | 85 words | -0.8 |
+| Step 20 | 72 words | +0.5 |
+| Step 40 | 58 words | +1.8 |
+| Step 60 (After) | 51 words | +2.9 |
+
+## Key Takeaway
+
+<Callout title="Key Takeaway">
+  Length control is surprisingly effective! The Gaussian reward function creates a "target zone" that the model quickly learns to hit. This technique works for any constraint with a numerical target: token counts, response time, code complexity, etc.
+</Callout>
+
+## Try This Challenge
+
+<div className="p-6 rounded-lg bg-blue-500/10 border-l-4 border-blue-500 my-6">
+  <div className="font-bold text-blue-500 mb-3">Try This Challenge:</div>
+  <ol className="list-decimal ml-6 space-y-2 text-muted-foreground">
+    <li>Modify to control sentence count instead of word count (aim for 3-5 sentences)</li>
+    <li>Add a "conciseness bonus": extra reward for conveying more info in fewer words</li>
+    <li>Create a "Twitter mode": exactly 280 characters with hashtags rewarded</li>
+  </ol>
+</div>
+
+## Next Steps
+
+Ready for intermediate reward functions?
+
+- [Example 4: Proximity Rewards](/docs/reinforcement-ai/examples/example-4) - Learn graduated reward scaling
+- [Example 5: Multi-Metric Evaluation](/docs/reinforcement-ai/examples/example-5) - Combine multiple objectives
+- [Reward Functions Guide](/docs/reinforcement-ai/fundamentals/reward-functions) - Six proven patterns

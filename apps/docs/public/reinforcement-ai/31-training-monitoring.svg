@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+  <rect width="1200" height="800" fill="#0f172a"/>
+  <text x="600" y="35" font-size="24" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Training Monitoring Dashboard</text>
+
+  <!-- Key Metrics -->
+  <rect x="50" y="80" width="550" height="320" fill="#1e293b" stroke="#10b981" stroke-width="3" rx="10"/>
+  <text x="325" y="120" font-size="18" fill="#10b981" font-weight="bold" text-anchor="middle"> Healthy Training Signals</text>
+
+  <text x="80" y="160" font-size="14" fill="#cbd5e1" font-weight="bold">Reward Curve:</text>
+  <path d="M 100 200 Q 200 190, 300 180 T 500 160" stroke="#10b981" stroke-width="3" fill="none"/>
+  <text x="80" y="230" font-size="12" fill="#10b981"> Steadily increasing</text>
+
+  <text x="80" y="270" font-size="14" fill="#cbd5e1" font-weight="bold">Loss Curve:</text>
+  <path d="M 100 310 Q 200 300, 300 295 T 500 290" stroke="#3b82f6" stroke-width="3" fill="none"/>
+  <text x="80" y="340" font-size="12" fill="#3b82f6"> Gradually decreasing</text>
+
+  <text x="80" y="380" font-size="14" fill="#cbd5e1" font-weight="bold">KL Divergence:</text>
+  <text x="80" y="370" font-size="12" fill="#fbbf24">&lt; 0.1 (policy not changing too much)</text>
+
+  <!-- Warning Signs -->
+  <rect x="625" y="80" width="550" height="320" fill="#1e293b" stroke="#ef4444" stroke-width="3" rx="10"/>
+  <text x="900" y="120" font-size="18" fill="#ef4444" font-weight="bold" text-anchor="middle"> Warning Signs</text>
+
+  <text x="655" y="160" font-size="14" fill="#cbd5e1" font-weight="bold">Reward Plateau:</text>
+  <path d="M 675 200 L 775 200 L 875 200 L 975 200" stroke="#fbbf24" stroke-width="3" fill="none"/>
+  <text x="655" y="230" font-size="12" fill="#fbbf24"> Not learning (check LR)</text>
+
+  <text x="655" y="270" font-size="14" fill="#cbd5e1" font-weight="bold">Reward Collapse:</text>
+  <path d="M 675 310 L 775 310 L 825 350 L 975 350" stroke="#ef4444" stroke-width="3" fill="none"/>
+  <text x="655" y="375" font-size="12" fill="#ef4444"> Mode collapse (reduce LR)</text>
+
+  <!-- Logging Setup -->
+  <rect x="50" y="430" width="1100" height="180" fill="#0f172a" stroke="#8b5cf6" stroke-width="3" rx="10"/>
+  <text x="600" y="470" font-size="18" fill="#8b5cf6" font-weight="bold" text-anchor="middle"> What to Log</text>
+
+  <text x="80" y="510" font-size="13" fill="#cbd5e1" font-weight="bold">Per Step:</text>
+  <text x="100" y="535" font-size="12" fill="#cbd5e1"> Average reward</text>
+  <text x="100" y="555" font-size="12" fill="#cbd5e1"> Loss (policy, value)</text>
+  <text x="100" y="575" font-size="12" fill="#cbd5e1"> KL divergence</text>
+
+  <text x="400" y="510" font-size="13" fill="#cbd5e1" font-weight="bold">Per Epoch:</text>
+  <text x="420" y="535" font-size="12" fill="#cbd5e1"> Max/min rewards</text>
+  <text x="420" y="555" font-size="12" fill="#cbd5e1"> Entropy (exploration)</text>
+  <text x="420" y="575" font-size="12" fill="#cbd5e1"> Gradient norms</text>
+
+  <text x="720" y="510" font-size="13" fill="#cbd5e1" font-weight="bold">Sampling:</text>
+  <text x="740" y="535" font-size="12" fill="#cbd5e1"> Generated examples</text>
+  <text x="740" y="555" font-size="12" fill="#cbd5e1"> Token-level rewards</text>
+  <text x="740" y="575" font-size="12" fill="#cbd5e1"> Failure cases</text>
+
+  <!-- Tools -->
+  <rect x="50" y="640" width="1100" height="130" fill="#1e293b" stroke="#10b981" stroke-width="3" rx="10"/>
+  <text x="600" y="680" font-size="18" fill="#10b981" font-weight="bold" text-anchor="middle"> Recommended Tools</text>
+  <text x="80" y="715" font-size="13" fill="#cbd5e1"> <tspan font-weight="bold">Weights &amp; Biases</tspan> (wandb): Experiment tracking &amp; visualization</text>
+  <text x="80" y="740" font-size="13" fill="#cbd5e1"> <tspan font-weight="bold">TensorBoard</tspan>: Real-time loss curves &amp; metrics</text>
+  <text x="80" y="765" font-size="13" fill="#cbd5e1"> <tspan font-weight="bold">Custom Logger</tspan>: Save samples to files for manual inspection</text>
+</svg>

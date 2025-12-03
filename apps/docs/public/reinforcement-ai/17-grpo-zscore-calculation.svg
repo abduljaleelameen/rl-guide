@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="#0f172a"/>
+  <text x="600" y="40" font-size="26" font-weight="bold" fill="#e2e8f0" text-anchor="middle">GRPO Z-Score Calculation</text>
+
+  <rect x="100" y="100" width="1000" height="80" fill="#1e293b" stroke="#10b981" stroke-width="3" rx="8"/>
+  <text x="600" y="150" font-size="18" fill="#10b981" text-anchor="middle" font-family="monospace">Advantage = (reward - mean) / std</text>
+
+  <!-- Example -->
+  <rect x="100" y="220" width="1000" height="400" fill="#0f172a" stroke="#334155" stroke-width="2" rx="8"/>
+  <text x="600" y="260" font-size="18" fill="#10b981" font-weight="bold" text-anchor="middle">Example with 8 Responses:</text>
+
+  <!-- Rewards table -->
+  <rect x="150" y="300" width="400" height="40" fill="#334155"/>
+  <text x="200" y="327" font-size="14" fill="#e2e8f0" font-weight="bold">Response</text>
+  <text x="400" y="327" font-size="14" fill="#e2e8f0" font-weight="bold">Reward</text>
+
+  <rect x="150" y="340" width="400" height="35" fill="#1e293b"/>
+  <text x="200" y="363" font-size="12" fill="#cbd5e1">#1</text>
+  <text x="400" y="363" font-size="12" fill="#10b981">3.0</text>
+
+  <rect x="150" y="375" width="400" height="35" fill="#1e293b"/>
+  <text x="200" y="398" font-size="12" fill="#cbd5e1">#2</text>
+  <text x="400" y="398" font-size="12" fill="#10b981">2.5</text>
+
+  <rect x="150" y="410" width="400" height="35" fill="#1e293b"/>
+  <text x="200" y="433" font-size="12" fill="#cbd5e1">#3-6</text>
+  <text x="400" y="433" font-size="12" fill="#fbbf24">1.0, 1.2, 0.8, 1.1</text>
+
+  <rect x="150" y="445" width="400" height="35" fill="#1e293b"/>
+  <text x="200" y="468" font-size="12" fill="#cbd5e1">#7-8</text>
+  <text x="400" y="468" font-size="12" fill="#ef4444">-0.5, -1.0</text>
+
+  <!-- Calculation -->
+  <rect x="600" y="300" width="450" height="280" fill="#1e293b" stroke="#10b981" stroke-width="2" rx="8"/>
+  <text x="825" y="335" font-size="14" fill="#10b981" font-weight="bold" text-anchor="middle">Calculation:</text>
+
+  <text x="630" y="370" font-size="13" fill="#cbd5e1">1. Mean = sum / count</text>
+  <text x="650" y="395" font-size="12" fill="#94a3b8">= (3.0+2.5+1.0+1.2+0.8+1.1-0.5-1.0) / 8</text>
+  <text x="650" y="415" font-size="12" fill="#10b981">= 1.01</text>
+
+  <text x="630" y="450" font-size="13" fill="#cbd5e1">2. Std = (variance)</text>
+  <text x="650" y="475" font-size="12" fill="#94a3b8"> 1.35</text>
+
+  <text x="630" y="510" font-size="13" fill="#cbd5e1">3. Z-score for best (#1):</text>
+  <text x="650" y="535" font-size="12" fill="#94a3b8">= (3.0 - 1.01) / 1.35</text>
+  <text x="650" y="555" font-size="12" fill="#10b981" font-weight="bold">= +1.47 (high advantage!)</text>
+
+  <rect x="100" y="620" width="1000" height="60" fill="#10b981" rx="8"/>
+  <text x="600" y="660" font-size="16" font-weight="bold" fill="white" text-anchor="middle"> Simple! Just normalize rewards  Model learns what's above/below average</text>
+</svg>

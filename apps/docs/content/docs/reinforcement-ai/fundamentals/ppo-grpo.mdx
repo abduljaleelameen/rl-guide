@@ -1,0 +1,232 @@
+---
+title: PPO vs GRPO
+description: Understanding the two main algorithms powering modern LLM reinforcement learning
+icon: Sparkles
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+## Understanding the Algorithms
+
+Now that we understand the basic RL math, let's dive into how PPO and GRPO actually work.
+
+**Spoiler:** Every extra term is just to prevent overfitting!
+
+![PPO vs GRPO Comparison](/reinforcement-ai/13-ppo-vs-grpo.svg)
+
+## The Three Models in RL Training
+
+<div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-8">
+  <div className="p-6 rounded-lg bg-blue-500/15 text-center">
+    <div className="text-4xl mb-3">📊</div>
+    <div className="font-bold text-blue-500 mb-2">Value Model</div>
+    <div className="text-sm text-muted-foreground">Predicts average reward from current state</div>
+  </div>
+  <div className="p-6 rounded-lg bg-cyan-500/15 text-center">
+    <div className="text-4xl mb-3">🔒</div>
+    <div className="font-bold text-cyan-500 mb-2">Reference Model</div>
+    <div className="text-sm text-muted-foreground">Your starting checkpoint (frozen)</div>
+  </div>
+  <div className="p-6 rounded-lg bg-green-500/15 text-center">
+    <div className="text-4xl mb-3">🤖</div>
+    <div className="font-bold text-green-500 mb-2">Policy Model</div>
+    <div className="text-sm text-muted-foreground">The model being trained (output)</div>
+  </div>
+</div>
+
+### Value Model: The Chess Board Analogy
+
+Think of AlphaGo or a chess engine. The value model does something similar:
+
+<div className="flex items-center gap-6 p-6 rounded-lg bg-blue-500/10 my-6">
+  <div className="text-6xl">♟️</div>
+  <div className="flex-1">
+    <div className="mb-2"><strong>Input:</strong> Look at the current chess board state</div>
+    <div className="mb-2"><strong>Output:</strong> "What's the probability white wins from here?"</div>
+    <div className="text-blue-500"><strong>Example:</strong> 78% chance of winning</div>
+  </div>
+</div>
+
+The value model:
+- Just looks at current state (snapshot)
+- Doesn't predict next moves
+- Outputs a single number: expected reward
+- Must be trained alongside the policy model
+
+## PPO Formula: Breaking It Down
+
+The PPO formula looks scary, but it's actually simple when you break it apart:
+
+![PPO Formula Component Breakdown](/reinforcement-ai/16-ppo-formula-breakdown.svg)
+
+<Tabs items={['The Ugly Formula', 'What It Really Is']}>
+  <Tab value="The Ugly Formula">
+    <div className="p-6 bg-orange-500/10 rounded-lg text-center my-6">
+      <div className="text-sm text-muted-foreground mb-3">The Formula:</div>
+      <div className="font-mono text-orange-500">
+        L = min(r(θ) · A, clip(r, 1-ε, 1+ε) · A) - β · KL(π || π_ref)
+      </div>
+    </div>
+  </Tab>
+
+  <Tab value="What It Really Is">
+    <div className="p-6 bg-green-500/10 rounded-lg text-center my-6">
+      <div className="text-sm text-muted-foreground mb-3">What it really is:</div>
+      <div className="font-mono text-lg text-green-500">
+        P(action | state) × Advantage
+      </div>
+      <div className="text-sm text-muted-foreground mt-3">Everything else just prevents overfitting!</div>
+    </div>
+  </Tab>
+</Tabs>
+
+### PPO Components Explained
+
+<Cards>
+  <Card title="Likelihood Ratio r(θ)">
+    ```
+    r(θ) = π(a|s) / π_old(a|s)
+    ```
+
+    Divide current probability by old probability. Prevents the model from taking actions it wouldn't normally take.
+  </Card>
+
+  <Card title="Trust Region (ε)">
+    ```
+    clip(r, 1-ε, 1+ε) where ε ≈ 0.2
+    ```
+
+    Limits how much the policy can change. If ratio goes above 1.2 or below 0.8, clip it!
+  </Card>
+
+  <Card title="KL Penalty (β)">
+    ```
+    -β · KL(π || π_ref) where β ≈ 0.05
+    ```
+
+    Penalize deviation from reference model. Don't stray too far from your starting point!
+  </Card>
+</Cards>
+
+## Reward Hacking: Why We Need Safeguards
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-8">
+  <div className="p-5 rounded-lg bg-red-500/15 border-2 border-red-500/30">
+    <div className="font-bold text-red-500 mb-3">Without safeguards:</div>
+    <div className="font-mono text-sm bg-black/20 p-3 rounded mb-3">
+      "To solve this we need to hello hello hello hello hello hello... 4"
+    </div>
+    <div className="text-sm text-red-500">Gets reward but output is garbage!</div>
+  </div>
+
+  <div className="p-5 rounded-lg bg-green-500/15 border-2 border-green-500/30">
+    <div className="font-bold text-green-500 mb-3">With safeguards:</div>
+    <div className="font-mono text-sm bg-black/20 p-3 rounded mb-3">
+      "2+2 equals 4"
+    </div>
+    <div className="text-sm text-green-500">Clean, normal output!</div>
+  </div>
+</div>
+
+<Callout>
+  The likelihood ratio catches this! "hello hello hello" is very unlikely according to the old model, so dividing by that tiny probability gives a huge ratio that gets clipped. **Problem solved!**
+</Callout>
+
+<Callout title="The Big Picture" type="info">
+  Don't memorize the PPO formula. Just remember: *it's probability × advantage, and everything else prevents overfitting.* That's all of machine learning!
+</Callout>
+
+## GRPO: The Simplified Approach
+
+GRPO (Group Relative Policy Optimization) makes a key simplification: **remove the value model entirely!**
+
+<div className="flex items-center justify-center gap-12 my-8 p-6 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg">
+  <div className="text-center">
+    <div className="text-5xl mb-2">📊</div>
+    <div className="text-red-500 font-bold">Value Model</div>
+    <div className="text-3xl text-red-500">✖️</div>
+  </div>
+  <div className="text-4xl text-muted-foreground">→</div>
+  <div className="text-center">
+    <div className="text-5xl mb-2">📈</div>
+    <div className="text-green-500 font-bold">Z-Score</div>
+    <div className="text-3xl text-green-500">✓</div>
+  </div>
+</div>
+
+## GRPO: Rollout Sampling & Z-Score
+
+Instead of a value model, GRPO uses statistics from multiple rollouts:
+
+<div className="space-y-4 my-8">
+  <div className="flex items-center gap-4">
+    <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">1</div>
+    <p><strong>Ask the same question multiple times</strong> (e.g., 4 rollouts)</p>
+  </div>
+  <div className="flex items-center gap-4">
+    <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">2</div>
+    <p><strong>Get different answers</strong> (model generates varied responses)</p>
+  </div>
+  <div className="flex items-center gap-4">
+    <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">3</div>
+    <p><strong>Score each answer</strong> (reward function: correct = 1, wrong = 0)</p>
+  </div>
+  <div className="flex items-center gap-4">
+    <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">4</div>
+    <p><strong>Calculate Z-score</strong>: (reward - mean) / std_dev</p>
+  </div>
+</div>
+
+![GRPO Z-Score Calculation](/reinforcement-ai/17-grpo-zscore-calculation.svg)
+
+## PPO vs GRPO: Quick Comparison
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+  <div className="p-6 rounded-lg border-t-4 border-orange-500 bg-card">
+    <h3 className="text-lg font-bold text-orange-500 mb-4">PPO (Proximal Policy Optimization)</h3>
+    <div className="text-muted-foreground mb-4">The traditional approach used by OpenAI</div>
+    <ul className="space-y-2 text-muted-foreground">
+      <li><strong>Policy Model:</strong> Generates responses</li>
+      <li><strong>Value Model:</strong> Predicts future rewards</li>
+      <li><strong>Reward Model:</strong> Scores responses</li>
+      <li><strong>Reference Model:</strong> Prevents drift</li>
+    </ul>
+    <div className="mt-4 p-3 rounded-lg bg-orange-500/10">
+      <strong className="text-orange-500">Requires 4 models!</strong>
+    </div>
+  </div>
+
+  <div className="p-6 rounded-lg border-t-4 border-green-500 bg-card">
+    <h3 className="text-lg font-bold text-green-500 mb-4">GRPO (Group Relative Policy Optimization)</h3>
+    <div className="text-muted-foreground mb-4">DeepSeek's simplified approach</div>
+    <ul className="space-y-2 text-muted-foreground">
+      <li><strong>Policy Model:</strong> Generates responses</li>
+      <li className="line-through opacity-50"><strong>Value Model:</strong> Removed!</li>
+      <li><strong>Reward Model:</strong> Scores responses</li>
+      <li><strong>Reference Model:</strong> Prevents drift</li>
+    </ul>
+    <div className="mt-4 p-3 rounded-lg bg-green-500/10">
+      <strong className="text-green-500">Only 3 models needed!</strong>
+    </div>
+  </div>
+</div>
+
+<Callout title="Why GRPO Matters" type="info">
+  By removing the value model, GRPO cuts memory requirements significantly. Instead of predicting future rewards, GRPO compares responses within a group - if one response is better than others in the batch, it gets reinforced. Simple but effective!
+</Callout>
+
+## Next Steps
+
+<Cards>
+  <Card href="/docs/reinforcement-ai/fundamentals/reward-functions" title="Reward Functions" icon="Award">
+    Learn about 6 common reward function patterns
+  </Card>
+  <Card href="/docs/reinforcement-ai/fundamentals/grpo-guide" title="GRPO Guide" icon="BookOpen">
+    Deep dive into GRPO implementation
+  </Card>
+  <Card href="/docs/reinforcement-ai/examples/example-1" title="Start Coding" icon="Code">
+    Build your first RL model
+  </Card>
+</Cards>

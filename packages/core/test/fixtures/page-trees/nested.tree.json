@@ -1,0 +1,82 @@
+{
+  "$id": "root",
+  "children": [
+    {
+      "$id": "root:test.mdx",
+      "name": "Hello",
+      "type": "page",
+      "url": "/test",
+    },
+    {
+      "$id": "root:(nested)",
+      "children": [
+        {
+          "$id": "root:(nested)/hello.mdx",
+          "name": "Route Group Page",
+          "type": "page",
+          "url": "/hello",
+        },
+      ],
+      "name": "Nested",
+      "type": "folder",
+    },
+    {
+      "$id": "root:hello",
+      "children": [],
+      "index": {
+        "$id": "root:hello/index.mdx",
+        "name": "Another hello page",
+        "type": "page",
+        "url": "/hello/index",
+      },
+      "name": "Another hello page",
+      "type": "folder",
+    },
+    {
+      "$id": "root:nested",
+      "children": [
+        {
+          "$id": "root:nested/test.mdx",
+          "name": "Nested Page",
+          "type": "page",
+          "url": "/nested/test",
+        },
+      ],
+      "name": "Nested",
+      "type": "folder",
+    },
+    {
+      "$id": "root:_0",
+      "name": "Text",
+      "type": "page",
+      "url": "https://google.com",
+    },
+    {
+      "$id": "root:_1",
+      "icon": "Icon",
+      "name": "Text",
+      "type": "page",
+      "url": "https://google.com",
+    },
+    {
+      "$id": "root:_2",
+      "external": true,
+      "name": "AI",
+      "type": "page",
+      "url": "/llms-full.txt",
+    },
+  ],
+  "fallback": {
+    "$id": "fallback-root-root",
+    "children": [
+      {
+        "$id": "fallback-root-root:hidden.mdx",
+        "name": "Hidden",
+        "type": "page",
+        "url": "/hidden",
+      },
+    ],
+    "name": "Docs",
+  },
+  "name": "Docs",
+}

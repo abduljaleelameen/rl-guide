@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1150">
+  <rect width="1000" height="1150" fill="#0f172a"/>
+  <text x="500" y="35" font-size="24" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Flowchart: Custom Prompt Tags (example5.py)</text>
+
+  <!-- Start -->
+  <ellipse cx="500" cy="90" rx="70" ry="35" fill="#10b981" stroke="#34d399" stroke-width="2"/>
+  <text x="500" y="98" font-size="14" fill="white" text-anchor="middle" font-weight="bold">START</text>
+
+  <path d="M 500 125 L 500 160" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Setup -->
+  <rect x="350" y="160" width="300" height="70" fill="#3b82f6" rx="8"/>
+  <text x="500" y="190" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Load Model</text>
+  <text x="500" y="210" font-size="11" fill="#dbeafe" text-anchor="middle">GPT-2 for controlled generation</text>
+
+  <path d="M 500 230 L 500 270" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Define Tags -->
+  <rect x="300" y="270" width="400" height="110" fill="#8b5cf6" rx="8"/>
+  <text x="500" y="300" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Define Custom Tags</text>
+  <text x="500" y="325" font-size="11" fill="#e9d5ff" text-anchor="middle">Prompt template:</text>
+  <text x="500" y="345" font-size="11" fill="#e9d5ff" text-anchor="middle" font-family="monospace">[FORMAL] Write about {topic}</text>
+  <text x="500" y="365" font-size="11" fill="#e9d5ff" text-anchor="middle">Tags: [FORMAL], [CASUAL], [TECHNICAL]</text>
+
+  <path d="M 500 380 L 500 420" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Training Loop -->
+  <rect x="300" y="420" width="400" height="50" fill="#8b5cf6" rx="8"/>
+  <text x="500" y="450" font-size="14" fill="white" text-anchor="middle" font-weight="bold">Training Loop (7000 steps)</text>
+
+  <path d="M 500 470 L 500 510" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Generate -->
+  <rect x="350" y="510" width="300" height="70" fill="#fbbf24" rx="8"/>
+  <text x="500" y="540" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Generate with Tag</text>
+  <text x="500" y="560" font-size="11" fill="#fef3c7" text-anchor="middle">model.generate(tagged_prompt)</text>
+
+  <path d="M 500 580 L 500 620" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Reward Function -->
+  <rect x="50" y="620" width="900" height="300" fill="#1e293b" stroke="#ec4899" stroke-width="3" rx="10"/>
+  <text x="500" y="655" font-size="16" fill="#ec4899" font-weight="bold" text-anchor="middle">TAG COMPLIANCE REWARD FUNCTION</text>
+
+  <rect x="100" y="685" width="350" height="200" fill="#0f172a" stroke="#10b981" stroke-width="2" rx="6"/>
+  <text x="275" y="715" font-size="13" fill="#10b981" text-anchor="middle" font-weight="bold">1. Extract Tag</text>
+  <text x="130" y="745" font-size="11" fill="#cbd5e1">requested_tag = parse_tag(prompt)</text>
+  <text x="130" y="765" font-size="11" fill="#cbd5e1">Example: "FORMAL"</text>
+  <text x="130" y="790" font-size="11" fill="#fbbf24">Analyze response style:</text>
+  <text x="130" y="810" font-size="11" fill="#fbbf24"> Word choice</text>
+  <text x="130" y="830" font-size="11" fill="#fbbf24"> Sentence structure</text>
+  <text x="130" y="850" font-size="11" fill="#fbbf24"> Tone indicators</text>
+
+  <rect x="550" y="685" width="350" height="200" fill="#0f172a" stroke="#10b981" stroke-width="2" rx="6"/>
+  <text x="725" y="715" font-size="13" fill="#10b981" text-anchor="middle" font-weight="bold">2. Check Compliance</text>
+  <text x="580" y="745" font-size="11" fill="#cbd5e1">does_comply = check_style(response, tag)</text>
+  <text x="580" y="770" font-size="11" fill="#10b981">if [FORMAL] and uses formal language:</text>
+  <text x="600" y="790" font-size="11" fill="#10b981">reward = +2.0 </text>
+  <text x="580" y="815" font-size="11" fill="#ef4444">if [FORMAL] but uses casual language:</text>
+  <text x="600" y="835" font-size="11" fill="#ef4444">reward = -1.0 </text>
+  <text x="580" y="860" font-size="11" fill="#fbbf24">Partial match: reward = +0.5</text>
+
+  <path d="M 500 920 L 500 960" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Normalize -->
+  <rect x="350" y="960" width="300" height="70" fill="#06b6d4" rx="8"/>
+  <text x="500" y="990" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Compute Advantages</text>
+  <text x="500" y="1010" font-size="11" fill="#cffafe" text-anchor="middle">(reward - mean) / std</text>
+
+  <path d="M 500 1030 L 500 1070" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Update -->
+  <rect x="350" y="1070" width="300" height="60" fill="#8b5cf6" rx="8"/>
+  <text x="500" y="1095" font-size="13" fill="white" text-anchor="middle" font-weight="bold">PPO Update</text>
+  <text x="500" y="1115" font-size="11" fill="#e9d5ff" text-anchor="middle">Learn tag  style mapping</text>
+
+  <!-- Loop -->
+  <path d="M 300 470 L 200 470 L 200 545 L 350 545" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="5,5"/>
+  <text x="220" y="505" font-size="11" fill="#fbbf24" font-weight="bold">Loop</text>
+
+  <path d="M 500 1130 L 500 1142" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- End -->
+  <ellipse cx="500" cy="1142" rx="60" ry="8" fill="#ef4444" stroke="#f87171" stroke-width="2"/>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#10b981"/>
+    </marker>
+  </defs>
+</svg>

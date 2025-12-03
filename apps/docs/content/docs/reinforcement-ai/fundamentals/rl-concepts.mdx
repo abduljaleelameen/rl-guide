@@ -1,0 +1,114 @@
+---
+title: RL Fundamentals
+description: How AI learns from rewards - the core concepts of reinforcement learning
+icon: Target
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## The Agent-Environment Loop
+
+At its core, reinforcement learning is simple: an agent takes actions in an environment and learns from the rewards it receives. This same principle applies whether you're training a video game AI or a language model!
+
+<Callout title="Interactive Demo" type="info">
+Click on each step below to learn more, or let it animate automatically!
+</Callout>
+
+<AgentLoopAnimation />
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+  <div className="p-6 rounded-lg border bg-card">
+    <h3 className="text-lg font-bold text-cyan-500 mb-4">Traditional RL (Games)</h3>
+    <ul className="space-y-2 text-muted-foreground">
+      <li><strong>Agent:</strong> Game-playing AI</li>
+      <li><strong>Environment:</strong> The game world</li>
+      <li><strong>State:</strong> Current screen/game state</li>
+      <li><strong>Action:</strong> Move, jump, shoot</li>
+      <li><strong>Reward:</strong> Points, winning</li>
+    </ul>
+  </div>
+  <div className="p-6 rounded-lg border bg-card">
+    <h3 className="text-lg font-bold text-primary mb-4">LLM RL (Language Models)</h3>
+    <ul className="space-y-2 text-muted-foreground">
+      <li><strong>Agent:</strong> The language model</li>
+      <li><strong>Environment:</strong> The prompt/conversation</li>
+      <li><strong>State:</strong> Input text so far</li>
+      <li><strong>Action:</strong> Generate tokens/response</li>
+      <li><strong>Reward:</strong> Human preference score</li>
+    </ul>
+  </div>
+</div>
+
+## The Pac-Man Analogy
+
+Think of reinforcement learning like playing Pac-Man. The game teaches you what's good and bad through immediate feedback:
+
+![Understanding Rewards with Pac-Man](/reinforcement-ai/11-pacman-rl-analogy.svg)
+
+<Cards>
+  <Card title="Positive Rewards">
+    **Pac-Man:** Eating dots (+10), eating fruit (+100)
+
+    **LLM:** Helpful answer, correct solution, following instructions
+  </Card>
+  <Card title="Negative Rewards">
+    **Pac-Man:** Hitting a ghost (-100), losing a life
+
+    **LLM:** Wrong answer, harmful content, off-topic response
+  </Card>
+  <Card title="Strategic Rewards">
+    **Pac-Man:** Power pellet → can eat ghosts!
+
+    **LLM:** Using reasoning steps, showing work, citing sources
+  </Card>
+</Cards>
+
+## Designing Reward Functions
+
+The magic of RL is in the reward function. Let's see how it works with a simple math example:
+
+<Callout title="Try It Yourself!" type="info">
+Click on different responses to see their scores, or type your own answer!
+</Callout>
+
+<RewardVisualizer />
+
+<Callout title="Key Insight">
+  This is exactly how **RLVR (RL with Verifiable Rewards)** works! For math and code, we can automatically check if answers are correct - no human needed. This enabled the breakthrough reasoning capabilities in models like O1 and DeepSeek R1.
+</Callout>
+
+## The Optimization Journey
+
+Imagine all possible AI models as points in a vast space. Training is a journey through this space, looking for the "best" model:
+
+<Callout title="Interactive Training Journey" type="info">
+Press play to watch the model evolve through training stages, or click on any stage to jump to it!
+</Callout>
+
+<TrainingProgress />
+
+## Single-Turn vs Multi-Turn RL
+
+In traditional RL (like games), actions are quick and frequent. In LLM RL:
+
+- **Single-turn:** One complete response = one "action." Reward given after the full response.
+- **Multi-turn:** Each message in a conversation could be an action. More complex but enables better dialogue skills.
+
+<Callout>
+  Most modern LLM RL implementations use single-turn for simplicity and faster training. Multi-turn is explored in research for conversational agents.
+</Callout>
+
+## Next Steps
+
+<Cards>
+  <Card href="/docs/reinforcement-ai/fundamentals/ppo-grpo" title="PPO vs GRPO" icon="Zap">
+    Learn about the two main RL algorithms
+  </Card>
+  <Card href="/docs/reinforcement-ai/fundamentals/reward-functions" title="Reward Function Patterns" icon="Award">
+    Explore 6 common reward function designs
+  </Card>
+  <Card href="/docs/reinforcement-ai/examples/example-1" title="Start Coding" icon="Code">
+    Try building your first reward function
+  </Card>
+</Cards>

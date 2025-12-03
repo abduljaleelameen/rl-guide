@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="#0f172a"/>
+  <text x="600" y="35" font-size="24" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Memory Optimization Strategies</text>
+
+  <!-- Problem -->
+  <rect x="100" y="80" width="1000" height="80" fill="#ef4444" stroke="#f87171" stroke-width="2" rx="8"/>
+  <text x="600" y="115" font-size="18" fill="white" text-anchor="middle" font-weight="bold"> Problem: CUDA Out of Memory (OOM)</text>
+  <text x="600" y="140" font-size="14" fill="#fecaca" text-anchor="middle">Large models (7B+ params) don't fit in GPU memory during training</text>
+
+  <!-- Strategy 1 -->
+  <rect x="50" y="200" width="350" height="200" fill="#1e293b" stroke="#3b82f6" stroke-width="3" rx="10"/>
+  <text x="225" y="240" font-size="16" fill="#3b82f6" font-weight="bold" text-anchor="middle">1. Gradient Checkpointing</text>
+  <text x="80" y="275" font-size="13" fill="#cbd5e1">Trade compute for memory</text>
+  <text x="100" y="305" font-size="12" fill="#94a3b8"> Recompute activations</text>
+  <text x="100" y="328" font-size="12" fill="#94a3b8"> Don't store all layers</text>
+  <text x="100" y="351" font-size="12" fill="#10b981"> ~40% memory savings</text>
+  <text x="100" y="374" font-size="12" fill="#ef4444"> 20% slower training</text>
+
+  <!-- Strategy 2 -->
+  <rect x="425" y="200" width="350" height="200" fill="#1e293b" stroke="#8b5cf6" stroke-width="3" rx="10"/>
+  <text x="600" y="240" font-size="16" fill="#8b5cf6" font-weight="bold" text-anchor="middle">2. Mixed Precision (FP16)</text>
+  <text x="455" y="275" font-size="13" fill="#cbd5e1">Use 16-bit floats</text>
+  <text x="475" y="305" font-size="12" fill="#94a3b8"> Half memory usage</text>
+  <text x="475" y="328" font-size="12" fill="#94a3b8"> Faster computation</text>
+  <text x="475" y="351" font-size="12" fill="#10b981"> 50% memory savings</text>
+  <text x="475" y="374" font-size="12" fill="#10b981"> 2-3x faster training</text>
+
+  <!-- Strategy 3 -->
+  <rect x="800" y="200" width="350" height="200" fill="#1e293b" stroke="#10b981" stroke-width="3" rx="10"/>
+  <text x="975" y="240" font-size="16" fill="#10b981" font-weight="bold" text-anchor="middle">3. DeepSpeed ZeRO</text>
+  <text x="830" y="275" font-size="13" fill="#cbd5e1">Distribute optimizer states</text>
+  <text x="850" y="305" font-size="12" fill="#94a3b8"> Split across GPUs</text>
+  <text x="850" y="328" font-size="12" fill="#94a3b8"> ZeRO-1, 2, 3 stages</text>
+  <text x="850" y="351" font-size="12" fill="#10b981"> 4-7x memory reduction</text>
+  <text x="850" y="374" font-size="12" fill="#10b981"> Train larger models</text>
+
+  <!-- Strategy 4 -->
+  <rect x="50" y="430" width="350" height="200" fill="#1e293b" stroke="#fbbf24" stroke-width="3" rx="10"/>
+  <text x="225" y="470" font-size="16" fill="#fbbf24" font-weight="bold" text-anchor="middle">4. Gradient Accumulation</text>
+  <text x="80" y="505" font-size="13" fill="#cbd5e1">Simulate large batch size</text>
+  <text x="100" y="535" font-size="12" fill="#94a3b8"> Update every N steps</text>
+  <text x="100" y="558" font-size="12" fill="#94a3b8"> Smaller micro-batches</text>
+  <text x="100" y="581" font-size="12" fill="#10b981"> Effective batch = 64</text>
+  <text x="100" y="604" font-size="12" fill="#10b981"> Actual batch = 8</text>
+
+  <!-- Strategy 5 -->
+  <rect x="425" y="430" width="350" height="200" fill="#1e293b" stroke="#ec4899" stroke-width="3" rx="10"/>
+  <text x="600" y="470" font-size="16" fill="#ec4899" font-weight="bold" text-anchor="middle">5. LoRA (Low-Rank)</text>
+  <text x="455" y="505" font-size="13" fill="#cbd5e1">Fine-tune small matrices</text>
+  <text x="475" y="535" font-size="12" fill="#94a3b8"> Freeze base model</text>
+  <text x="475" y="558" font-size="12" fill="#94a3b8"> Train adapter layers</text>
+  <text x="475" y="581" font-size="12" fill="#10b981"> 90% memory reduction</text>
+  <text x="475" y="604" font-size="12" fill="#10b981"> Fast training</text>
+
+  <!-- Strategy 6 -->
+  <rect x="800" y="430" width="350" height="200" fill="#1e293b" stroke="#06b6d4" stroke-width="3" rx="10"/>
+  <text x="975" y="470" font-size="16" fill="#06b6d4" font-weight="bold" text-anchor="middle">6. Flash Attention</text>
+  <text x="830" y="505" font-size="13" fill="#cbd5e1">Optimized attention</text>
+  <text x="850" y="535" font-size="12" fill="#94a3b8"> Kernel-level fusion</text>
+  <text x="850" y="558" font-size="12" fill="#94a3b8"> Reduced I/O overhead</text>
+  <text x="850" y="581" font-size="12" fill="#10b981"> 3-5x faster attention</text>
+  <text x="850" y="604" font-size="12" fill="#10b981"> Lower memory peak</text>
+
+  <rect x="100" y="650" width="1000" height="40" fill="#10b981" rx="8"/>
+  <text x="600" y="678" font-size="14" font-weight="bold" fill="white" text-anchor="middle"> Combine multiple strategies for maximum efficiency!</text>
+</svg>

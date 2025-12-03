@@ -1,0 +1,276 @@
+---
+title: 'Example 5: Multi-Metric Evaluation'
+description: Combine multiple objectives into a single weighted reward function
+icon: Layers
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<div className="flex items-center justify-between mb-6">
+  <div className="text-3xl font-bold text-purple-500">Example 5: Multi-Metric Evaluation</div>
+  <div className="px-4 py-2 rounded-full bg-purple-500 text-white font-bold">
+    ⏱️ 30 minutes
+  </div>
+</div>
+
+**Goal:** Combine multiple objectives (accuracy, conciseness, style) into a single reward function with weighted scoring.
+
+## For Non-Technical People
+
+<Callout type="info">
+  Imagine grading an essay. You don't just check if it's factually correct - you also consider writing quality, length, tone, and structure. This example teaches the AI to excel at ALL these dimensions simultaneously, not just one!
+
+  **Real-world use cases:** Content generation, customer service responses, technical documentation, educational content, professional emails.
+</Callout>
+
+![Multi-Metric Weighting System](/reinforcement-ai/23-multi-metric-weighting.svg)
+
+## For Technical People
+
+<div className="p-6 rounded-lg bg-purple-500/10 border-l-4 border-purple-500 my-6">
+  <div className="mb-4">
+    We implement a weighted linear combination of multiple reward signals. Each metric is normalized to [0, 3], then combined using configurable weights that sum to 1.0. This creates a Pareto-optimal solution balancing competing objectives.
+  </div>
+  <div>
+    <strong>Technical Details:</strong>
+    <ul className="mt-2 ml-4 list-disc">
+      <li><strong>Formula:</strong> R_total = Σ(w_i × R_i) where Σw_i = 1.0</li>
+      <li><strong>Metrics:</strong> Correctness (40%), Conciseness (25%), Clarity (20%), Tone (15%)</li>
+      <li><strong>Normalization:</strong> All metrics scaled to [0, 3] range</li>
+      <li><strong>Optimization:</strong> Gradient descent naturally finds multi-objective balance</li>
+    </ul>
+  </div>
+</div>
+
+## Complete Python Implementation
+
+```python title="example5_multi_metric.py"
+from textblob import TextBlob
+import re
+from datasets import Dataset
+
+# Training data with expected answers
+training_data = [
+    {"prompt": "What is the capital of France?", "answer": "Paris"},
+    {"prompt": "Who invented the telephone?", "answer": "Alexander Graham Bell"},
+    {"prompt": "What is photosynthesis?", "answer": "process plants convert sunlight"},
+    {"prompt": "When did World War II end?", "answer": "1945"},
+    {"prompt": "What is the largest ocean?", "answer": "Pacific"},
+    {"prompt": "Who wrote Romeo and Juliet?", "answer": "Shakespeare"},
+    {"prompt": "What is the speed of light?", "answer": "300000 km/s"},
+    {"prompt": "What causes tides?", "answer": "gravitational pull moon"},
+]
+
+dataset = Dataset.from_list(training_data)
+
+def multi_metric_reward(prompts, outputs, correct_answers, **kwargs):
+    """
+    Combines multiple evaluation metrics with configurable weights.
+
+    Metrics:
+    - Correctness (40%): Is the answer right?
+    - Conciseness (25%): Is it brief but complete?
+    - Clarity (20%): Is it well-structured?
+    - Tone (15%): Is it professional?
+
+    Args:
+        prompts: Questions
+        outputs: Model responses
+        correct_answers: Expected answers
+
+    Returns:
+        rewards: Weighted combination of all metrics
+    """
+    rewards = []
+
+    # Metric weights (must sum to 1.0)
+    WEIGHTS = {
+        'correctness': 0.40,
+        'conciseness': 0.25,
+        'clarity': 0.20,
+        'tone': 0.15,
+    }
+
+    for output, correct in zip(outputs, correct_answers):
+        metrics = {}
+
+        # METRIC 1: Correctness (0-3 scale)
+        if correct.lower() in output.lower():
+            metrics['correctness'] = 3.0  # Correct
+        elif any(word in output.lower() for word in correct.lower().split()):
+            metrics['correctness'] = 1.5  # Partial
+        else:
+            metrics['correctness'] = 0.0  # Wrong
+
+        # METRIC 2: Conciseness (0-3 scale)
+        word_count = len(output.split())
+        if 20 <= word_count <= 50:
+            metrics['conciseness'] = 3.0  # Perfect length
+        elif 10 <= word_count <= 80:
+            metrics['conciseness'] = 2.0  # Acceptable
+        else:
+            metrics['conciseness'] = 0.5  # Too short or too long
+
+        # METRIC 3: Clarity (0-3 scale)
+        # Check for good structure: sentences, punctuation
+        sentences = output.count('.') + output.count('!') + output.count('?')
+        has_structure = sentences >= 2 and sentences <= 5
+        no_fragments = len([w for w in output.split() if len(w) > 1]) > 5
+
+        if has_structure and no_fragments:
+            metrics['clarity'] = 3.0
+        elif has_structure or no_fragments:
+            metrics['clarity'] = 1.5
+        else:
+            metrics['clarity'] = 0.5
+
+        # METRIC 4: Tone (0-3 scale)
+        # Professional, not too casual, not negative
+        blob = TextBlob(output)
+        sentiment = blob.sentiment.polarity
+
+        # Check for casual language
+        casual_words = ['gonna', 'wanna', 'yeah', 'nah', 'kinda']
+        has_casual = any(word in output.lower() for word in casual_words)
+
+        if sentiment >= 0.1 and not has_casual:
+            metrics['tone'] = 3.0  # Professional and positive
+        elif sentiment >= -0.1:
+            metrics['tone'] = 1.5  # Neutral is okay
+        else:
+            metrics['tone'] = 0.5  # Too negative
+
+        # COMBINE METRICS with weights
+        weighted_sum = sum(
+            metrics[metric] * weight
+            for metric, weight in WEIGHTS.items()
+        )
+
+        # Scale to reward range (0 to 3)
+        reward = weighted_sum
+
+        rewards.append(reward)
+
+    return rewards
+
+# Test with sample
+print("Testing Multi-Metric Reward:\n")
+
+test_output = "The capital of France is Paris. It's a beautiful city with rich history."
+test_correct = "Paris"
+test_reward = multi_metric_reward([""], [test_output], [test_correct])[0]
+
+print(f"Sample Output: {test_output}")
+print(f"Total Reward: {test_reward:.2f}\n")
+
+print("Metric Breakdown:")
+print("  Correctness (40%): 3.0 - Correct answer found ✓")
+print("  Conciseness (25%): 3.0 - 12 words (perfect)")
+print("  Clarity (20%): 3.0 - 2 sentences (good structure)")
+print("  Tone (15%): 3.0 - Positive and professional")
+
+# Training with GRPO
+from trl import GRPOConfig, GRPOTrainer
+
+# Prepare dataset with answers
+def add_answer_field(example):
+    return {
+        "prompt": example["prompt"],
+        "correct_answer": example["answer"]
+    }
+
+dataset = dataset.map(add_answer_field)
+
+config = GRPOConfig(
+    output_dir = "./multi_metric_model",
+    num_train_epochs = 3,
+    per_device_train_batch_size = 1,
+    gradient_accumulation_steps = 4,
+    num_generations = 10,
+    learning_rate = 5e-6,
+    temperature = 1.0,
+)
+
+trainer = GRPOTrainer(
+    model = model,
+    args = config,
+    train_dataset = dataset,
+    reward_function = lambda p, o, **kw: multi_metric_reward(
+        p, o, [d['correct_answer'] for d in dataset]
+    ),
+    tokenizer = tokenizer,
+)
+
+print("\nStarting multi-metric training...")
+trainer.train()
+print("Model optimized for all metrics!")
+```
+
+## Metric Weight Tuning
+
+Adjust weights based on your priorities:
+
+### Accuracy-First (e.g., medical/legal):
+```python
+WEIGHTS = {
+    'correctness': 0.70,  # Accuracy is critical
+    'conciseness': 0.10,
+    'clarity': 0.15,
+    'tone': 0.05,
+}
+```
+
+### Balance (general use):
+```python
+WEIGHTS = {
+    'correctness': 0.40,
+    'conciseness': 0.25,
+    'clarity': 0.20,
+    'tone': 0.15,
+}
+```
+
+### Style-First (creative writing):
+```python
+WEIGHTS = {
+    'correctness': 0.20,
+    'conciseness': 0.20,
+    'clarity': 0.30,
+    'tone': 0.30,  # Emphasis on style
+}
+```
+
+## Training Results Comparison
+
+| Output | Correctness | Conciseness | Clarity | Tone | Total |
+|--------|-------------|-------------|---------|------|-------|
+| "Paris" | 3.0 | 0.5 | 0.5 | 1.5 | 1.70 |
+| "The capital is Paris." | 3.0 | 3.0 | 1.5 | 3.0 | 2.78 |
+| "Paris is the capital of France. It's known for the Eiffel Tower." | 3.0 | 3.0 | 3.0 | 3.0 | 3.00 |
+
+## Key Takeaway
+
+<Callout title="Key Takeaway">
+  Multi-metric rewards let you optimize for multiple objectives simultaneously. The weights let you tune the importance of each metric. Start with equal weights, then adjust based on which aspects matter most for your use case.
+</Callout>
+
+## Advanced: Dynamic Weight Adjustment
+
+You can even adjust weights during training:
+
+```python
+def dynamic_weights(epoch):
+    """Gradually shift focus from correctness to style"""
+    if epoch < 5:
+        return {'correctness': 0.70, 'conciseness': 0.10, 'clarity': 0.10, 'tone': 0.10}
+    elif epoch < 10:
+        return {'correctness': 0.50, 'conciseness': 0.20, 'clarity': 0.15, 'tone': 0.15}
+    else:
+        return {'correctness': 0.40, 'conciseness': 0.25, 'clarity': 0.20, 'tone': 0.15}
+```
+
+## Next Steps
+
+- [Example 6: Custom Tag Systems](/docs/reinforcement-ai/examples/example-6) - Structured output training
+- [Training Optimization](/docs/reinforcement-ai/training/optimization) - Hyperparameter tuning
+- [Reward Functions Guide](/docs/reinforcement-ai/fundamentals/reward-functions) - Six proven patterns

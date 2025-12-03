@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 800">
+  <rect width="1400" height="800" fill="#0f172a"/>
+  <text x="700" y="40" font-size="28" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Progressive Learning Paths</text>
+
+  <!-- Beginner Path -->
+  <rect x="100" y="120" width="380" height="550" fill="#1e293b" stroke="#10b981" stroke-width="3" rx="12"/>
+  <text x="290" y="170" font-size="22" fill="#10b981" font-weight="bold" text-anchor="middle"> Beginner</text>
+  <rect x="130" y="200" width="320" height="80" fill="#10b981" rx="8"/>
+  <text x="290" y="235" font-size="14" fill="white" font-weight="bold" text-anchor="middle">Example 1: Sentiment</text>
+  <text x="290" y="260" font-size="11" fill="#d1fae5" text-anchor="middle">Simple binary rewards</text>
+  <rect x="130" y="300" width="320" height="80" fill="#10b981" rx="8"/>
+  <text x="290" y="335" font-size="14" fill="white" font-weight="bold" text-anchor="middle">Example 2: Math</text>
+  <text x="290" y="360" font-size="11" fill="#d1fae5" text-anchor="middle">Graduated rewards</text>
+  <rect x="130" y="400" width="320" height="80" fill="#10b981" rx="8"/>
+  <text x="290" y="435" font-size="14" fill="white" font-weight="bold" text-anchor="middle">Example 3: Length</text>
+  <text x="290" y="460" font-size="11" fill="#d1fae5" text-anchor="middle">Continuous rewards</text>
+  <text x="140" y="510" font-size="12" fill="#cbd5e1">Time: ~1 hour total</text>
+  <text x="140" y="535" font-size="12" fill="#cbd5e1">GPU: T4 (free tier)</text>
+  <text x="140" y="560" font-size="12" fill="#cbd5e1">Prerequisites: Basic Python</text>
+  <text x="140" y="630" font-size="11" fill="#10b981" font-weight="bold"> Start here if new to RL!</text>
+
+  <!-- Intermediate Path -->
+  <rect x="510" y="120" width="380" height="550" fill="#1e293b" stroke="#f59e0b" stroke-width="3" rx="12"/>
+  <text x="700" y="170" font-size="22" fill="#f59e0b" font-weight="bold" text-anchor="middle"> Intermediate</text>
+  <rect x="540" y="200" width="320" height="80" fill="#f59e0b" rx="8"/>
+  <text x="700" y="235" font-size="14" fill="white" font-weight="bold" text-anchor="middle">Example 4: Proximity</text>
+  <text x="700" y="260" font-size="11" fill="#fef3c7" text-anchor="middle">Exponential decay</text>
+  <rect x="540" y="300" width="320" height="80" fill="#f59e0b" rx="8"/>
+  <text x="700" y="335" font-size="14" fill="white" font-weight="bold" text-anchor="middle">Example 5: Multi-Metric</text>
+  <text x="700" y="360" font-size="11" fill="#fef3c7" text-anchor="middle">Weighted objectives</text>
+  <rect x="540" y="400" width="320" height="80" fill="#f59e0b" rx="8"/>
+  <text x="700" y="435" font-size="14" fill="white" font-weight="bold" text-anchor="middle">Example 6: Custom Tags</text>
+  <text x="700" y="460" font-size="11" fill="#fef3c7" text-anchor="middle">Structured outputs</text>
+  <text x="550" y="510" font-size="12" fill="#cbd5e1">Time: ~3 hours total</text>
+  <text x="550" y="535" font-size="12" fill="#cbd5e1">GPU: T4 or A10</text>
+  <text x="550" y="560" font-size="12" fill="#cbd5e1">Prerequisites: Beginner path</text>
+  <text x="550" y="630" font-size="11" fill="#f59e0b" font-weight="bold"> Production-ready patterns</text>
+
+  <!-- Advanced Path -->
+  <rect x="920" y="120" width="380" height="550" fill="#1e293b" stroke="#8b5cf6" stroke-width="3" rx="12"/>
+  <text x="1110" y="170" font-size="22" fill="#8b5cf6" font-weight="bold" text-anchor="middle"> Advanced</text>
+  <rect x="950" y="200" width="320" height="80" fill="#8b5cf6" rx="8"/>
+  <text x="1110" y="235" font-size="14" fill="white" font-weight="bold" text-anchor="middle">Example 7: vLLM</text>
+  <text x="1110" y="260" font-size="11" fill="#ede9fe" text-anchor="middle">10x speedup</text>
+  <rect x="950" y="300" width="320" height="80" fill="#8b5cf6" rx="8"/>
+  <text x="1110" y="335" font-size="14" fill="white" font-weight="bold" text-anchor="middle">Example 8: Domain Mix</text>
+  <text x="1110" y="360" font-size="11" fill="#ede9fe" text-anchor="middle">Multi-task training</text>
+  <rect x="950" y="400" width="320" height="80" fill="#8b5cf6" rx="8"/>
+  <text x="1110" y="435" font-size="14" fill="white" font-weight="bold" text-anchor="middle">Example 9: Production</text>
+  <text x="1110" y="460" font-size="11" fill="#ede9fe" text-anchor="middle">Full pipeline</text>
+  <text x="960" y="510" font-size="12" fill="#cbd5e1">Time: ~8 hours total</text>
+  <text x="960" y="535" font-size="12" fill="#cbd5e1">GPU: A100 recommended</text>
+  <text x="960" y="560" font-size="12" fill="#cbd5e1">Prerequisites: Intermediate</text>
+  <text x="960" y="630" font-size="11" fill="#8b5cf6" font-weight="bold"> Industry-grade systems</text>
+
+  <rect x="100" y="710" width="1200" height="60" fill="#10b981" rx="8"/>
+  <text x="700" y="750" font-size="16" font-weight="bold" fill="white" text-anchor="middle"> Follow the path sequentially for best learning experience!</text>
+</svg>

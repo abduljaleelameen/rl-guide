@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
+  <rect width="1200" height="600" fill="#0f172a"/>
+  <text x="600" y="35" font-size="24" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Model Naming Convention Guide</text>
+
+  <rect x="100" y="100" width="1000" height="80" fill="#1e293b" stroke="#10b981" stroke-width="2" rx="8"/>
+  <text x="600" y="135" font-size="16" fill="#10b981" font-weight="bold" text-anchor="middle">Example: Qwen2.5-7B-Instruct-GPTQ-Int4</text>
+  <text x="200" y="165" font-size="13" fill="#fbbf24">Qwen2.5</text>
+  <text x="350" y="165" font-size="13" fill="#3b82f6">7B</text>
+  <text x="450" y="165" font-size="13" fill="#8b5cf6">Instruct</text>
+  <text x="600" y="165" font-size="13" fill="#ec4899">GPTQ</text>
+  <text x="750" y="165" font-size="13" fill="#f59e0b">Int4</text>
+
+  <rect x="100" y="220" width="180" height="100" fill="#0f172a" stroke="#fbbf24" stroke-width="2" rx="6"/>
+  <text x="190" y="250" font-size="12" fill="#fbbf24" font-weight="bold" text-anchor="middle">Model Family</text>
+  <text x="190" y="275" font-size="10" fill="#cbd5e1" text-anchor="middle">Qwen, Llama,</text>
+  <text x="190" y="295" font-size="10" fill="#cbd5e1" text-anchor="middle">Mistral, etc.</text>
+
+  <rect x="310" y="220" width="180" height="100" fill="#0f172a" stroke="#3b82f6" stroke-width="2" rx="6"/>
+  <text x="400" y="250" font-size="12" fill="#3b82f6" font-weight="bold" text-anchor="middle">Size</text>
+  <text x="400" y="275" font-size="10" fill="#cbd5e1" text-anchor="middle">3B, 7B, 70B</text>
+  <text x="400" y="295" font-size="10" fill="#cbd5e1" text-anchor="middle">(parameters)</text>
+
+  <rect x="520" y="220" width="180" height="100" fill="#0f172a" stroke="#8b5cf6" stroke-width="2" rx="6"/>
+  <text x="610" y="250" font-size="12" fill="#8b5cf6" font-weight="bold" text-anchor="middle">Variant</text>
+  <text x="610" y="275" font-size="10" fill="#cbd5e1" text-anchor="middle">Base, Instruct,</text>
+  <text x="610" y="295" font-size="10" fill="#cbd5e1" text-anchor="middle">Chat, etc.</text>
+
+  <rect x="730" y="220" width="180" height="100" fill="#0f172a" stroke="#ec4899" stroke-width="2" rx="6"/>
+  <text x="820" y="250" font-size="12" fill="#ec4899" font-weight="bold" text-anchor="middle">Quantization</text>
+  <text x="820" y="275" font-size="10" fill="#cbd5e1" text-anchor="middle">GPTQ, AWQ,</text>
+  <text x="820" y="295" font-size="10" fill="#cbd5e1" text-anchor="middle">GGUF, etc.</text>
+
+  <rect x="940" y="220" width="180" height="100" fill="#0f172a" stroke="#f59e0b" stroke-width="2" rx="6"/>
+  <text x="1030" y="250" font-size="12" fill="#f59e0b" font-weight="bold" text-anchor="middle">Precision</text>
+  <text x="1030" y="275" font-size="10" fill="#cbd5e1" text-anchor="middle">Int4, Int8,</text>
+  <text x="1030" y="295" font-size="10" fill="#cbd5e1" text-anchor="middle">FP16, etc.</text>
+
+  <rect x="100" y="360" width="1000" height="200" fill="#1e293b" stroke="#10b981" stroke-width="2" rx="8"/>
+  <text x="600" y="395" font-size="16" fill="#10b981" font-weight="bold" text-anchor="middle">Common Examples:</text>
+  <text x="130" y="430" font-size="13" fill="#cbd5e1"> <text fill="#10b981">Llama-3-8B-Instruct:</text> Chat-optimized 8B model</text>
+  <text x="130" y="460" font-size="13" fill="#cbd5e1"> <text fill="#10b981">Qwen2.5-7B-GPTQ-Int4:</text> 7B compressed to 4-bit</text>
+  <text x="130" y="490" font-size="13" fill="#cbd5e1"> <text fill="#10b981">Mistral-7B-v0.1:</text> Base model (not instruction-tuned)</text>
+  <text x="130" y="520" font-size="13" fill="#cbd5e1"> <text fill="#10b981">CodeLlama-34B:</text> Code-specialized 34B model</text>
+</svg>

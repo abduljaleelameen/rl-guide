@@ -1,0 +1,170 @@
+---
+title: Training Stages
+description: How AI models learn - from pre-training to reasoning
+icon: Layers
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## The AI Learning "Cake" (Yann LeCun's Analogy)
+
+Back in 2016, AI pioneer Yann LeCun used a brilliant analogy to explain the different types of machine learning. Think of training an AI like baking a cake:
+
+![The Machine Learning Cake](/reinforcement-ai/05-cake-analogy.svg)
+
+<Cards>
+  <Card title="The Cake: Pre-training">
+    **What:** Training on massive amounts of text data
+
+    **Simple explanation:** The model reads the entire internet and learns patterns in language - grammar, facts, reasoning patterns
+
+    **Technical:** Self-supervised learning on trillions of tokens, predicting the next word
+  </Card>
+
+  <Card title="The Icing: Fine-tuning (SFT)">
+    **What:** Teaching the model to follow instructions
+
+    **Simple explanation:** Showing the model examples of good conversations so it learns to be helpful
+
+    **Technical:** Supervised fine-tuning on instruction-response pairs
+  </Card>
+
+  <Card title="The Cherry: Reinforcement Learning">
+    **What:** Learning from feedback to improve quality
+
+    **Simple explanation:** Human raters or AI judges score responses, and the model learns to produce better answers
+
+    **Technical:** RLHF/DPO/GRPO to align model outputs with human preferences
+  </Card>
+</Cards>
+
+![The Training Pipeline](/reinforcement-ai/06-training-pipeline.svg)
+
+<Callout title="Fun Fact">
+  Yann LeCun presented this cake analogy in September 2016 - nearly 10 years ago! It took until 2023-2024 for the industry to fully realize and implement these concepts at scale.
+</Callout>
+
+## The Two Big Capability Jumps
+
+AI models have experienced two major "step function" improvements:
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+  <div className="p-6 rounded-lg border-2 border-green-500 bg-green-500/10">
+    <h3 className="text-lg font-bold text-green-500 mb-3">Jump #1: SFT/RLHF Jump</h3>
+    <div className="text-muted-foreground">
+      Good instruction fine-tuning + reinforcement learning made models actually useful (ChatGPT moment)
+    </div>
+  </div>
+
+  <div className="p-6 rounded-lg border-2 border-blue-500 bg-blue-500/10">
+    <h3 className="text-lg font-bold text-blue-500 mb-3">Jump #2: RL Reasoning Jump</h3>
+    <div className="text-muted-foreground">
+      Long reasoning traces + advanced RL dramatically improved problem-solving (O1/R1 moment)
+    </div>
+  </div>
+</div>
+
+![AI Capability Jumps Over Time](/reinforcement-ai/07-capability-jumps.svg)
+
+## The Complete Training Pipeline
+
+Modern LLM training actually has more stages than just the "cake" analogy suggests. Here's the full picture:
+
+![Complete 5-Stage Training Pipeline](/reinforcement-ai/09-complete-training-stages.svg)
+
+<div className="grid grid-cols-2 md:grid-cols-5 gap-4 my-8">
+  <div className="p-4 rounded-lg text-center bg-blue-500/10">
+    <div className="text-4xl font-bold mb-2">1</div>
+    <div className="font-bold text-blue-500 mb-2">Pre-training</div>
+    <div className="text-sm text-muted-foreground">Learn language patterns from trillions of tokens</div>
+  </div>
+
+  <div className="p-4 rounded-lg text-center bg-purple-500/10">
+    <div className="text-4xl font-bold mb-2">2</div>
+    <div className="font-bold text-purple-500 mb-2">Mid-training</div>
+    <div className="text-sm text-muted-foreground">Domain-specific knowledge (code, math, science)</div>
+  </div>
+
+  <div className="p-4 rounded-lg text-center bg-cyan-500/10">
+    <div className="text-4xl font-bold mb-2">3</div>
+    <div className="font-bold text-cyan-500 mb-2">SFT</div>
+    <div className="text-sm text-muted-foreground">Learn to follow instructions</div>
+  </div>
+
+  <div className="p-4 rounded-lg text-center bg-green-500/10">
+    <div className="text-4xl font-bold mb-2">4</div>
+    <div className="font-bold text-green-500 mb-2">Post-training</div>
+    <div className="text-sm text-muted-foreground">RLHF for alignment & safety</div>
+  </div>
+
+  <div className="p-4 rounded-lg text-center bg-orange-500/10">
+    <div className="text-4xl font-bold mb-2">5</div>
+    <div className="font-bold text-orange-500 mb-2">RLVR</div>
+    <div className="text-sm text-muted-foreground">Reasoning via verifiable rewards</div>
+  </div>
+</div>
+
+<Callout title="DeepSeek Zero Discovery" type="info">
+  DeepSeek found that you can skip SFT entirely and go straight from pre-training to RL! Their experiments showed models can develop reasoning capabilities without explicit instruction tuning - though the resulting outputs are less "polished."
+</Callout>
+
+## Stage Details
+
+### 1. Pre-training
+
+The foundation layer where models learn general language understanding by predicting the next token across massive text corpora.
+
+- **Data:** Web pages, books, code, conversations (trillions of tokens)
+- **Objective:** Next-token prediction
+- **Duration:** Weeks to months on thousands of GPUs
+- **Cost:** Millions to tens of millions of dollars
+
+### 2. Mid-training (Optional)
+
+Domain-specific knowledge injection for specialized capabilities.
+
+- **Data:** Math problems, code repositories, scientific papers
+- **Objective:** Enhanced performance on specific domains
+- **Used by:** Models targeting specialized use cases
+
+### 3. Supervised Fine-Tuning (SFT)
+
+Teaching the model to follow instructions and have conversations.
+
+- **Data:** Instruction-response pairs (thousands to hundreds of thousands)
+- **Objective:** Learn Q&A format, helpfulness, instruction-following
+- **Duration:** Hours to days
+- **Result:** Base model → Instruct model
+
+### 4. Post-training (RLHF/DPO)
+
+Alignment with human preferences and values.
+
+- **Data:** Human preference comparisons
+- **Objective:** Helpful, harmless, honest responses
+- **Methods:** RLHF, DPO, GRPO
+- **Result:** Aligned, safe assistant
+
+### 5. RLVR (RL with Verifiable Rewards)
+
+Advanced reasoning through verifiable task completion.
+
+- **Data:** Math problems, coding challenges, logic puzzles
+- **Objective:** Step-by-step reasoning and problem solving
+- **Verification:** Automatic correctness checking
+- **Result:** Reasoning model (O1/R1 level)
+
+## Next Steps
+
+<Cards>
+  <Card href="/docs/reinforcement-ai/fundamentals/rl-concepts" title="RL Fundamentals" icon="Target">
+    Understand the core concepts of reinforcement learning
+  </Card>
+  <Card href="/docs/reinforcement-ai/fundamentals/ppo-grpo" title="PPO vs GRPO" icon="Zap">
+    Learn about the main RL algorithms
+  </Card>
+  <Card href="/docs/reinforcement-ai/examples/example-1" title="Start Coding" icon="Code">
+    Build your first RL model
+  </Card>
+</Cards>

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1100">
+  <rect width="1000" height="1100" fill="#0f172a"/>
+  <text x="500" y="35" font-size="24" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Flowchart: Math Verifier (example1.py)</text>
+
+  <!-- Start -->
+  <ellipse cx="500" cy="90" rx="70" ry="35" fill="#10b981" stroke="#34d399" stroke-width="2"/>
+  <text x="500" y="98" font-size="14" fill="white" text-anchor="middle" font-weight="bold">START</text>
+
+  <path d="M 500 125 L 500 160" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Load Model -->
+  <rect x="350" y="160" width="300" height="70" fill="#3b82f6" rx="8"/>
+  <text x="500" y="190" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Load Model</text>
+  <text x="500" y="210" font-size="11" fill="#dbeafe" text-anchor="middle">GPT2LMHeadModel.from_pretrained()</text>
+
+  <path d="M 500 230 L 500 270" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Load Dataset -->
+  <rect x="350" y="270" width="300" height="70" fill="#3b82f6" rx="8"/>
+  <text x="500" y="300" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Load Math Dataset</text>
+  <text x="500" y="320" font-size="11" fill="#dbeafe" text-anchor="middle">load_dataset("gsm8k")</text>
+
+  <path d="M 500 340 L 500 380" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Training Loop Start -->
+  <rect x="300" y="380" width="400" height="60" fill="#8b5cf6" rx="8"/>
+  <text x="500" y="405" font-size="14" fill="white" text-anchor="middle" font-weight="bold">For each training step (5000 steps):</text>
+  <text x="500" y="425" font-size="11" fill="#e9d5ff" text-anchor="middle">Batch size = 32</text>
+
+  <path d="M 500 440 L 500 480" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Generate Responses -->
+  <rect x="350" y="480" width="300" height="70" fill="#fbbf24" rx="8"/>
+  <text x="500" y="510" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Generate Responses</text>
+  <text x="500" y="530" font-size="11" fill="#fef3c7" text-anchor="middle">model.generate(prompt, max_length=150)</text>
+
+  <path d="M 500 550 L 500 590" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Reward Function -->
+  <rect x="50" y="590" width="900" height="200" fill="#1e293b" stroke="#ec4899" stroke-width="3" rx="10"/>
+  <text x="500" y="625" font-size="16" fill="#ec4899" font-weight="bold" text-anchor="middle">MATH VERIFIER REWARD FUNCTION</text>
+
+  <rect x="100" y="650" width="350" height="110" fill="#0f172a" stroke="#10b981" stroke-width="2" rx="6"/>
+  <text x="275" y="680" font-size="13" fill="#10b981" text-anchor="middle" font-weight="bold">Extract Answer</text>
+  <text x="130" y="705" font-size="11" fill="#cbd5e1">Parse final answer from response</text>
+  <text x="130" y="725" font-size="11" fill="#cbd5e1">Look for "####" marker in GSM8K</text>
+  <text x="130" y="745" font-size="11" fill="#10b981">predicted = extract(response)</text>
+
+  <rect x="550" y="650" width="350" height="110" fill="#0f172a" stroke="#10b981" stroke-width="2" rx="6"/>
+  <text x="725" y="680" font-size="13" fill="#10b981" text-anchor="middle" font-weight="bold">Verify Answer</text>
+  <text x="580" y="705" font-size="11" fill="#cbd5e1">Compare with ground truth</text>
+  <text x="580" y="725" font-size="11" fill="#10b981">if predicted == ground_truth:</text>
+  <text x="600" y="745" font-size="11" fill="#10b981">reward = +1.0 </text>
+
+  <path d="M 500 790 L 500 830" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Compute Advantage -->
+  <rect x="350" y="830" width="300" height="70" fill="#06b6d4" rx="8"/>
+  <text x="500" y="860" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Compute Advantage</text>
+  <text x="500" y="880" font-size="11" fill="#cffafe" text-anchor="middle">A = (reward - mean_reward) / std_reward</text>
+
+  <path d="M 500 900 L 500 940" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- PPO Update -->
+  <rect x="350" y="940" width="300" height="70" fill="#8b5cf6" rx="8"/>
+  <text x="500" y="970" font-size="13" fill="white" text-anchor="middle" font-weight="bold">PPO Update</text>
+  <text x="500" y="990" font-size="11" fill="#e9d5ff" text-anchor="middle">optimizer.step() - 4 epochs</text>
+
+  <!-- Decision -->
+  <path d="M 500 1010 L 500 1050" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M 300 440 L 200 440 L 200 515 L 350 515" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="5,5"/>
+  <text x="220" y="475" font-size="11" fill="#fbbf24" font-weight="bold">Loop</text>
+
+  <!-- End -->
+  <ellipse cx="500" cy="1065" rx="70" ry="35" fill="#ef4444" stroke="#f87171" stroke-width="2"/>
+  <text x="500" y="1073" font-size="14" fill="white" text-anchor="middle" font-weight="bold">END</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#10b981"/>
+    </marker>
+  </defs>
+</svg>

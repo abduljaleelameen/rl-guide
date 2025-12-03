@@ -1,0 +1,364 @@
+---
+title: 'Example 8: Domain Mixing'
+description: Train on multiple domains simultaneously to prevent mode collapse
+icon: Shuffle
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+<div className="flex items-center justify-between mb-6">
+  <div className="text-3xl font-bold text-purple-500">Example 8: Domain Mixing</div>
+  <div className="px-4 py-2 rounded-full bg-purple-500 text-white font-bold">
+    ⏱️ 40 minutes
+  </div>
+</div>
+
+**Goal:** Train on multiple domains simultaneously (code, math, reasoning) to prevent mode collapse and improve generalization.
+
+## For Non-Technical People
+
+<Callout type="info">
+  Imagine learning to be a doctor by ONLY studying heart surgery - you'd be amazing at hearts but terrible at everything else! Domain mixing is like medical school: you study cardiology, neurology, pediatrics, etc. simultaneously. This makes the AI well-rounded instead of overly specialized.
+
+  **Real-world impact:** DeepSeek R1 uses domain mixing to excel at math, coding, reasoning, and general knowledge - not just one narrow task.
+</Callout>
+
+![Domain Mixing Strategy](/reinforcement-ai/26-domain-mixing-strategy.svg)
+
+## For Technical People
+
+<div className="p-6 rounded-lg bg-purple-500/10 border-l-4 border-purple-500 my-6">
+  <div className="mb-4">
+    Domain mixing prevents reward hacking and mode collapse by presenting diverse objectives during training. We implement weighted sampling across task distributions, with per-domain reward functions. This is critical for general-purpose models that must handle varied user requests.
+  </div>
+  <div>
+    <strong>Technical Details:</strong>
+    <ul className="mt-2 ml-4 list-disc">
+      <li><strong>Sampling Strategy:</strong> Weighted random selection from domain-specific datasets</li>
+      <li><strong>Reward Functions:</strong> Domain-specific validators (code execution, math verification, etc.)</li>
+      <li><strong>Catastrophic Forgetting:</strong> Mitigation via continual learning and replay buffers</li>
+      <li><strong>Transfer Learning:</strong> Skills learned in one domain improve others</li>
+    </ul>
+  </div>
+</div>
+
+## Why Domain Mixing Matters
+
+### Problem: Mode Collapse
+
+Training on a single domain causes:
+- **Overfitting:** Model becomes too specialized
+- **Reward Hacking:** Model exploits task-specific shortcuts
+- **Poor Transfer:** Fails on slightly different tasks
+- **Production Failure:** Real users ask diverse questions
+
+### Solution: Multi-Domain Training
+
+DeepSeek's approach:
+1. Mix math, code, reasoning, and general knowledge
+2. Use domain-specific reward functions
+3. Weighted sampling based on target use case
+4. Continuous validation across all domains
+
+## Complete Implementation
+
+```python title="example8_domain_mixing.py"
+from datasets import Dataset, concatenate_datasets
+import random
+
+# ========================================
+# STEP 1: Create Domain-Specific Datasets
+# ========================================
+
+# Math domain
+math_data = [
+    {"prompt": "What is 127 + 358?", "answer": "485", "domain": "math"},
+    {"prompt": "Calculate 12 * 15", "answer": "180", "domain": "math"},
+    {"prompt": "Solve: 1000 / 25", "answer": "40", "domain": "math"},
+    {"prompt": "What is 15% of 200?", "answer": "30", "domain": "math"},
+]
+
+# Code domain
+code_data = [
+    {"prompt": "Write a Python function to reverse a string",
+     "answer": "def reverse(s): return s[::-1]",
+     "domain": "code"},
+    {"prompt": "How do you check if a number is even in Python?",
+     "answer": "if num % 2 == 0:",
+     "domain": "code"},
+    {"prompt": "Write a function to find max of two numbers",
+     "answer": "def max_of_two(a, b): return a if a > b else b",
+     "domain": "code"},
+]
+
+# Reasoning domain
+reasoning_data = [
+    {"prompt": "If it takes 5 machines 5 minutes to make 5 widgets, how long for 100 machines to make 100 widgets?",
+     "answer": "5 minutes",
+     "domain": "reasoning"},
+    {"prompt": "A bat and ball cost $1.10 together. The bat costs $1 more than the ball. How much is the ball?",
+     "answer": "$0.05",
+     "domain": "reasoning"},
+]
+
+# General knowledge domain
+general_data = [
+    {"prompt": "What is the capital of France?", "answer": "Paris", "domain": "general"},
+    {"prompt": "Who invented the telephone?", "answer": "Alexander Graham Bell", "domain": "general"},
+    {"prompt": "What year did WWII end?", "answer": "1945", "domain": "general"},
+]
+
+# ========================================
+# STEP 2: Domain-Specific Reward Functions
+# ========================================
+
+def math_reward(output, answer):
+    """Verify mathematical correctness"""
+    import re
+    numbers = re.findall(r'-?\d+\.?\d*', output)
+    if numbers and float(numbers[0]) == float(answer):
+        return 3.0
+    return -1.0
+
+def code_reward(output, answer):
+    """Check if key code elements are present"""
+    key_elements = answer.lower().split()
+    matches = sum(1 for elem in key_elements if elem in output.lower())
+    return (matches / len(key_elements)) * 3.0
+
+def reasoning_reward(output, answer):
+    """Check for correct reasoning answer"""
+    if answer.lower() in output.lower():
+        return 3.0
+    return 0.0
+
+def general_reward(output, answer):
+    """Simple correctness check"""
+    if answer.lower() in output.lower():
+        return 3.0
+    elif any(word in output.lower() for word in answer.lower().split()):
+        return 1.5
+    return 0.0
+
+# ========================================
+# STEP 3: Unified Reward Function
+# ========================================
+
+def domain_mixed_reward(prompts, outputs, answers, domains, **kwargs):
+    """
+    Routes to domain-specific reward function based on task type.
+
+    Args:
+        prompts: Questions
+        outputs: Model responses
+        answers: Correct answers
+        domains: Domain labels (math, code, reasoning, general)
+
+    Returns:
+        rewards: List of reward scores
+    """
+    rewards = []
+
+    reward_functions = {
+        'math': math_reward,
+        'code': code_reward,
+        'reasoning': reasoning_reward,
+        'general': general_reward,
+    }
+
+    for output, answer, domain in zip(outputs, answers, domains):
+        reward_fn = reward_functions[domain]
+        reward = reward_fn(output, answer)
+        rewards.append(reward)
+
+    return rewards
+
+# ========================================
+# STEP 4: Weighted Domain Sampling
+# ========================================
+
+def create_mixed_dataset(domain_datasets, weights):
+    """
+    Create training dataset with weighted sampling.
+
+    Args:
+        domain_datasets: Dict of {domain: dataset}
+        weights: Dict of {domain: probability}
+
+    Example weights:
+        - Balanced: {'math': 0.25, 'code': 0.25, 'reasoning': 0.25, 'general': 0.25}
+        - Math-focused: {'math': 0.50, 'code': 0.25, 'reasoning': 0.15, 'general': 0.10}
+        - Production: {'math': 0.40, 'code': 0.30, 'reasoning': 0.20, 'general': 0.10}
+    """
+    mixed_data = []
+    total_samples = 1000  # Adjust based on needs
+
+    for domain, weight in weights.items():
+        n_samples = int(total_samples * weight)
+        domain_samples = random.choices(domain_datasets[domain], k=n_samples)
+        mixed_data.extend(domain_samples)
+
+    # Shuffle to prevent sequential domain blocks
+    random.shuffle(mixed_data)
+
+    return Dataset.from_list(mixed_data)
+
+# Example usage
+domain_datasets = {
+    'math': math_data,
+    'code': code_data,
+    'reasoning': reasoning_data,
+    'general': general_data,
+}
+
+# DeepSeek-style weights (production-oriented)
+weights = {
+    'math': 0.40,      # Heavy emphasis on math
+    'code': 0.30,      # Strong coding capability
+    'reasoning': 0.20, # Complex problem solving
+    'general': 0.10,   # Basic knowledge
+}
+
+mixed_dataset = create_mixed_dataset(domain_datasets, weights)
+
+# ========================================
+# STEP 5: Training with Domain Mixing
+# ========================================
+
+from trl import GRPOConfig, GRPOTrainer
+
+config = GRPOConfig(
+    output_dir="./domain_mixed_model",
+    num_train_epochs=5,
+    per_device_train_batch_size=2,
+    gradient_accumulation_steps=8,
+    num_generations=12,
+    learning_rate=5e-6,
+    temperature=1.0,
+)
+
+trainer = GRPOTrainer(
+    model=model,
+    args=config,
+    train_dataset=mixed_dataset,
+    reward_function=domain_mixed_reward,
+    tokenizer=tokenizer,
+)
+
+print("Training with domain mixing...")
+trainer.train()
+print("Multi-domain model trained!")
+```
+
+## Sampling Strategies
+
+<Cards>
+  <Card title="Balanced (Research)">
+    ```python
+    weights = {
+        'math': 0.25,
+        'code': 0.25,
+        'reasoning': 0.25,
+        'general': 0.25,
+    }
+    ```
+    Best for: Academic research, benchmarks
+  </Card>
+
+  <Card title="Technical (Production)">
+    ```python
+    weights = {
+        'math': 0.40,
+        'code': 0.35,
+        'reasoning': 0.20,
+        'general': 0.05,
+    }
+    ```
+    Best for: Technical chatbots, coding assistants
+  </Card>
+
+  <Card title="General Purpose">
+    ```python
+    weights = {
+        'math': 0.20,
+        'code': 0.20,
+        'reasoning': 0.30,
+        'general': 0.30,
+    }
+    ```
+    Best for: Consumer chatbots, general assistants
+  </Card>
+</Cards>
+
+## Monitoring Per-Domain Performance
+
+```python
+def evaluate_by_domain(model, test_datasets):
+    """Track performance on each domain separately"""
+    results = {}
+
+    for domain, test_data in test_datasets.items():
+        rewards = []
+        for item in test_data:
+            output = model.generate(item['prompt'])
+            reward = domain_mixed_reward(
+                [item['prompt']],
+                [output],
+                [item['answer']],
+                [domain]
+            )[0]
+            rewards.append(reward)
+
+        results[domain] = {
+            'mean_reward': np.mean(rewards),
+            'samples': len(rewards),
+        }
+
+    return results
+
+# Check for catastrophic forgetting
+print("\nPer-Domain Performance:")
+for domain, metrics in evaluate_by_domain(model, test_datasets).items():
+    print(f"{domain}: {metrics['mean_reward']:.2f}")
+```
+
+## Common Pitfalls
+
+### 1. Imbalanced Sampling
+**Problem:** Over-sampling one domain causes others to degrade
+**Solution:** Monitor per-domain validation metrics
+
+### 2. Incompatible Reward Scales
+**Problem:** Different domains have different reward ranges
+**Solution:** Normalize all rewards to [-1, 3] range
+
+### 3. Sequential Training
+**Problem:** Training domains in sequence causes forgetting
+**Solution:** Shuffle mixed dataset thoroughly
+
+## Key Takeaway
+
+<Callout title="Key Takeaway">
+  Domain mixing is essential for production models. DeepSeek R1's success comes from training on diverse tasks simultaneously. Without mixing, models become brittle specialists that fail on real-world varied queries.
+</Callout>
+
+## Real-World Applications
+
+### DeepSeek R1 Approach
+- 40% mathematical reasoning
+- 30% code generation
+- 20% logical reasoning
+- 10% general knowledge
+
+### OpenAI O1 Strategy (estimated)
+- Heavy emphasis on multi-step reasoning
+- Code verification tasks
+- Mathematical proof generation
+- Scientific problem solving
+
+## Next Steps
+
+- [Example 9: Production Pipeline](/docs/reinforcement-ai/examples/example-9) - Complete deployment system
+- [Training Optimization](/docs/reinforcement-ai/training/optimization) - Advanced training techniques
+- [Production Guide](/docs/reinforcement-ai/advanced/production) - Deployment best practices

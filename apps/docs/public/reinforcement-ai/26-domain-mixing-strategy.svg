@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="#0f172a"/>
+  <text x="600" y="35" font-size="24" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Domain Mixing Strategy</text>
+
+  <!-- Pie chart -->
+  <circle cx="300" cy="350" r="180" fill="none" stroke="#334155" stroke-width="2"/>
+  <path d="M 300 350 L 300 170 A 180 180 0 0 1 447 280 Z" fill="#fbbf24" opacity="0.8"/>
+  <text x="350" y="250" font-size="16" fill="white" font-weight="bold">40%</text>
+  <text x="340" y="270" font-size="12" fill="white">Math</text>
+
+  <path d="M 300 350 L 447 280 A 180 180 0 0 1 435 430 Z" fill="#3b82f6" opacity="0.8"/>
+  <text x="410" y="360" font-size="16" fill="white" font-weight="bold">30%</text>
+  <text x="405" y="380" font-size="12" fill="white">Code</text>
+
+  <path d="M 300 350 L 435 430 A 180 180 0 0 1 200 480 Z" fill="#8b5cf6" opacity="0.8"/>
+  <text x="310" y="450" font-size="16" fill="white" font-weight="bold">20%</text>
+  <text x="290" y="470" font-size="12" fill="white">Reasoning</text>
+
+  <path d="M 300 350 L 200 480 A 180 180 0 0 1 300 170 Z" fill="#10b981" opacity="0.8"/>
+  <text x="200" y="350" font-size="16" fill="white" font-weight="bold">10%</text>
+  <text x="185" y="370" font-size="12" fill="white">General</text>
+
+  <!-- Why box -->
+  <rect x="550" y="100" width="600" height="500" fill="#1e293b" stroke="#10b981" stroke-width="2" rx="8"/>
+  <text x="850" y="140" font-size="18" fill="#10b981" font-weight="bold" text-anchor="middle">Why Domain Mixing?</text>
+
+  <text x="580" y="180" font-size="14" fill="#cbd5e1" font-weight="bold"> Single Domain Problems:</text>
+  <text x="600" y="210" font-size="13" fill="#ef4444"> Overfits to one task type</text>
+  <text x="600" y="235" font-size="13" fill="#ef4444"> Poor transfer learning</text>
+  <text x="600" y="260" font-size="13" fill="#ef4444"> Can't handle varied questions</text>
+
+  <text x="580" y="300" font-size="14" fill="#cbd5e1" font-weight="bold"> Multi-Domain Benefits:</text>
+  <text x="600" y="330" font-size="13" fill="#10b981"> Robust across task types</text>
+  <text x="600" y="355" font-size="13" fill="#10b981"> Better generalization</text>
+  <text x="600" y="380" font-size="13" fill="#10b981"> Production-ready model</text>
+
+  <rect x="580" y="420" width="540" height="150" fill="#0f172a" stroke="#fbbf24" stroke-width="2" rx="8"/>
+  <text x="850" y="450" font-size="14" fill="#fbbf24" font-weight="bold" text-anchor="middle">DeepSeek R1 Approach:</text>
+  <text x="600" y="480" font-size="12" fill="#cbd5e1">1. Sample batches by weight (40/30/20/10)</text>
+  <text x="600" y="505" font-size="12" fill="#cbd5e1">2. Use domain-specific reward functions</text>
+  <text x="600" y="530" font-size="12" fill="#cbd5e1">3. Monitor per-domain performance</text>
+  <text x="600" y="555" font-size="12" fill="#cbd5e1">4. Adjust weights if one domain lags</text>
+
+  <rect x="100" y="620" width="1000" height="60" fill="#10b981" rx="8"/>
+  <text x="600" y="658" font-size="16" font-weight="bold" fill="white" text-anchor="middle"> Result: Model that excels at multiple tasks, just like production systems!</text>
+</svg>

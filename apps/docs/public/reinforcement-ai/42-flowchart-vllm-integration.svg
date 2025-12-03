@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 1100">
+  <rect width="1100" height="1100" fill="#0f172a"/>
+  <text x="550" y="35" font-size="24" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Flowchart: vLLM Fast Inference (example6.py)</text>
+
+  <!-- Start -->
+  <ellipse cx="550" cy="90" rx="70" ry="35" fill="#10b981" stroke="#34d399" stroke-width="2"/>
+  <text x="550" y="98" font-size="14" fill="white" text-anchor="middle" font-weight="bold">START</text>
+
+  <path d="M 550 125 L 550 160" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Setup vLLM -->
+  <rect x="350" y="160" width="400" height="90" fill="#3b82f6" rx="8"/>
+  <text x="550" y="190" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Initialize vLLM Server</text>
+  <text x="550" y="215" font-size="11" fill="#dbeafe" text-anchor="middle">LLM("gpt2", tensor_parallel_size=2)</text>
+  <text x="550" y="235" font-size="11" fill="#10b981" text-anchor="middle"> Optimized for throughput (4000+ tok/s)</text>
+
+  <path d="M 550 250 L 550 290" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Load Dataset -->
+  <rect x="400" y="290" width="300" height="70" fill="#3b82f6" rx="8"/>
+  <text x="550" y="320" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Prepare Large Batch</text>
+  <text x="550" y="340" font-size="11" fill="#dbeafe" text-anchor="middle">batch_size = 128 prompts</text>
+
+  <path d="M 550 360 L 550 400" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Training Loop -->
+  <rect x="350" y="400" width="400" height="50" fill="#8b5cf6" rx="8"/>
+  <text x="550" y="430" font-size="14" fill="white" text-anchor="middle" font-weight="bold">Training Loop (15000 steps)</text>
+
+  <path d="M 550 450 L 550 490" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Generate with vLLM -->
+  <rect x="100" y="490" width="900" height="140" fill="#1e293b" stroke="#fbbf24" stroke-width="3" rx="10"/>
+  <text x="550" y="525" font-size="16" fill="#fbbf24" font-weight="bold" text-anchor="middle"> Fast Batch Generation (vLLM)</text>
+
+  <text x="130" y="560" font-size="12" fill="#cbd5e1">outputs = vllm_model.generate(prompts_batch)</text>
+  <text x="130" y="585" font-size="12" fill="#10b981"> Continuous batching</text>
+  <text x="130" y="605" font-size="12" fill="#10b981"> PagedAttention (efficient KV cache)</text>
+  <text x="600" y="585" font-size="12" fill="#10b981"> 10-20x faster than HuggingFace</text>
+  <text x="600" y="605" font-size="12" fill="#10b981"> Parallel processing</text>
+
+  <path d="M 550 630 L 550 670" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Reward Function -->
+  <rect x="100" y="670" width="900" height="140" fill="#1e293b" stroke="#ec4899" stroke-width="3" rx="10"/>
+  <text x="550" y="705" font-size="16" fill="#ec4899" font-weight="bold" text-anchor="middle">REWARD FUNCTION (Any Type)</text>
+
+  <text x="130" y="740" font-size="12" fill="#cbd5e1">For each output in batch:</text>
+  <text x="150" y="765" font-size="12" fill="#cbd5e1"> Compute reward (correctness, quality, etc.)</text>
+  <text x="150" y="785" font-size="12" fill="#10b981"> Fast scoring (batch processed)</text>
+  <text x="600" y="765" font-size="12" fill="#94a3b8">rewards = [r1, r2, ..., r128]</text>
+
+  <path d="M 550 810 L 550 850" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Normalize -->
+  <rect x="400" y="850" width="300" height="70" fill="#06b6d4" rx="8"/>
+  <text x="550" y="880" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Compute Advantages</text>
+  <text x="550" y="900" font-size="11" fill="#cffafe" text-anchor="middle">advantages = normalize(rewards)</text>
+
+  <path d="M 550 920 L 550 960" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Update Policy -->
+  <rect x="400" y="960" width="300" height="70" fill="#8b5cf6" rx="8"/>
+  <text x="550" y="990" font-size="13" fill="white" text-anchor="middle" font-weight="bold">GRPO Update</text>
+  <text x="550" y="1010" font-size="11" fill="#e9d5ff" text-anchor="middle">Update policy weights</text>
+
+  <!-- Loop -->
+  <path d="M 350 450 L 250 450 L 250 560 L 100 560" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="5,5"/>
+  <text x="270" y="500" font-size="11" fill="#fbbf24" font-weight="bold">Loop</text>
+
+  <path d="M 550 1030 L 550 1065" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Performance Note -->
+  <rect x="150" y="1040" width="800" height="50" fill="#10b981" rx="8"/>
+  <text x="550" y="1073" font-size="14" font-weight="bold" fill="white" text-anchor="middle"> vLLM speeds up training 10-20x for large batch inference!</text>
+
+  <!-- End -->
+  <ellipse cx="550" cy="1065" rx="50" ry="8" fill="#ef4444" stroke="#f87171" stroke-width="2"/>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#10b981"/>
+    </marker>
+  </defs>
+</svg>

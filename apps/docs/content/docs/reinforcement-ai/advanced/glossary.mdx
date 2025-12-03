@@ -1,0 +1,412 @@
+---
+title: Glossary
+description: Complete reference of RL and AI terminology
+icon: BookMarked
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Glossary
+
+A comprehensive reference of reinforcement learning, AI training, and related terminology.
+
+## A
+
+### Advantage
+
+The difference between a specific action's reward and the expected reward (baseline). Used to determine which actions are better than average.
+
+**Formula:** `Advantage = Reward - Baseline`
+
+**Example:** If average reward is 1.5 and your response got 2.5, advantage = +1.0
+
+### Agent
+
+The AI model being trained through reinforcement learning. The agent takes actions (generates responses) to maximize rewards.
+
+## B
+
+### Batch Size
+
+Number of training examples processed simultaneously. Larger batches are more efficient but require more memory.
+
+**Trade-off:** Speed vs Memory
+- Small (1-2): Slower but fits in limited VRAM
+- Medium (4-8): Balanced
+- Large (16+): Fastest but requires significant VRAM
+
+### Baseline Model
+
+The original, unmodified model used for comparison. Also called "reference model."
+
+**Purpose:** Prevent model from drifting too far during RL training
+
+### bfloat16
+
+Brain floating point 16-bit format. More stable than fp16 for training with similar memory benefits.
+
+**When to use:** A100, H100 GPUs (modern hardware)
+
+## C
+
+### Canary Deployment
+
+Gradual rollout strategy where new model serves small percentage of traffic first.
+
+**Typical progression:** 5% → 25% → 50% → 100%
+
+### Catastrophic Forgetting
+
+When model loses previously learned skills while learning new ones. Common in sequential training.
+
+**Solution:** Domain mixing, replay buffers, or multi-task training
+
+### Checkpoint
+
+Saved snapshot of model weights during training. Enables recovery and rollback.
+
+**Best practice:** Save every 100-500 steps, keep last 5-10 checkpoints
+
+## D
+
+### Domain Mixing
+
+Training on multiple task types simultaneously (math, code, reasoning, etc.) to prevent overfitting.
+
+**Example:** 40% math, 30% code, 20% reasoning, 10% general
+
+### DPO (Direct Preference Optimization)
+
+RL algorithm that directly optimizes for preferred responses without separate reward model.
+
+**Comparison:** Simpler than RLHF but requires pairwise preference data
+
+## E
+
+### Early Stopping
+
+Halting training when validation performance stops improving.
+
+**Typical setting:** Stop if no improvement for 3-5 evaluation rounds
+
+### Entropy
+
+Measure of randomness/diversity in model outputs. Higher entropy = more exploration.
+
+## F
+
+### Fine-Tuning
+
+Training a pre-trained model on specific tasks or domains. Can be supervised (SFT) or reinforcement learning (RLHF).
+
+## G
+
+### Gradient Accumulation
+
+Technique to simulate larger batch sizes by accumulating gradients over multiple small batches.
+
+**Formula:** `Effective Batch Size = Batch Size × Accumulation Steps`
+
+**Example:** batch_size=2, accumulation=8 → effective batch of 16
+
+### Gradient Checkpointing
+
+Memory optimization that recomputes activations during backward pass instead of storing them.
+
+**Trade-off:** 40% less memory, 15% slower training
+
+### GRPO (Group Relative Policy Optimization)
+
+Simplified RL algorithm that removes value model from PPO, using group statistics for advantage estimation.
+
+**Key innovation:** `Advantage = (reward - group_mean) / group_std`
+
+**Benefit:** 25% less memory, simpler training
+
+## H
+
+### Hyperparameter
+
+Configurable training setting (learning rate, batch size, etc.).
+
+**Critical hyperparameters:** learning_rate, temperature, num_generations, kl_coef
+
+## K
+
+### KL Divergence
+
+Measure of how much the trained model differs from the reference model.
+
+**Purpose:** Prevent model from deviating too much during RL training
+
+**Control:** `kl_coef` parameter (typical: 0.01-0.1)
+
+## L
+
+### Learning Rate
+
+Step size for parameter updates during training. Most critical hyperparameter.
+
+**Typical range:** 1e-7 to 1e-5
+**Standard:** 5e-6
+
+### LoRA (Low-Rank Adaptation)
+
+Efficient fine-tuning method that adds small trainable matrices instead of updating all weights.
+
+**Parameters:**
+- `r` (rank): Typically 8, 16, 32, or 64
+- Lower rank = less memory, faster training
+
+### LLM (Large Language Model)
+
+Neural network trained on massive text data to understand and generate language.
+
+**Examples:** GPT-4, Claude, Llama, Qwen
+
+## M
+
+### Mode Collapse
+
+When model converges to generating same/similar responses repeatedly despite different prompts.
+
+**Solutions:** Increase diversity penalty, higher temperature, more num_generations
+
+### Multi-Metric Reward
+
+Reward function combining multiple objectives with weights.
+
+**Example:** `reward = 0.5 × correctness + 0.3 × brevity + 0.2 × tone`
+
+## N
+
+### num_generations
+
+GRPO parameter: how many responses to generate per prompt for advantage estimation.
+
+**Range:** 4-32
+**Typical:** 8-16
+
+## O
+
+### Out of Memory (OOM)
+
+Error when GPU runs out of VRAM. Common during RL training with multiple rollouts.
+
+**Solutions:**
+1. Reduce num_generations
+2. Increase gradient_accumulation_steps
+3. Reduce sequence length
+4. Use smaller LoRA rank
+
+## P
+
+### PagedAttention
+
+vLLM's memory-efficient attention mechanism that uses non-contiguous memory blocks.
+
+**Benefit:** 2-4x higher throughput vs standard attention
+
+### PPO (Proximal Policy Optimization)
+
+Popular RL algorithm that constrains policy updates for stability.
+
+**Components:** Policy model, value model, reference model, reward model
+
+**vs GRPO:** PPO needs 4 models, GRPO needs 3 (no value model)
+
+### Prompt
+
+Input text given to the model. In RL training, prompts are questions/tasks the model must respond to.
+
+## Q
+
+### Quantization
+
+Reducing model precision (e.g., 16-bit → 4-bit) to save memory.
+
+**4-bit quantization:** 75% memory reduction, less than 1% quality loss
+
+## R
+
+### Reference Model
+
+Frozen copy of model before RL training. Used to compute KL divergence and prevent drift.
+
+### Reward Function
+
+Function that scores model outputs. Core of RL training.
+
+**Types:**
+- Binary: Correct/incorrect
+- Graduated: Partial credit based on proximity
+- Multi-metric: Weighted combination of multiple scores
+- Verifiable: Automated checking (test execution, math verification)
+
+### Reward Hacking
+
+When model exploits loopholes in reward function to get high scores without actually solving the task.
+
+**Example:** Generating very short responses to maximize brevity reward
+
+**Prevention:** Multi-metric rewards, validation testing, diverse data
+
+### Reward Shaping
+
+Designing reward function to provide intermediate feedback, not just final outcome.
+
+**Good:** Reward showing work, structure, reasoning steps
+**Bad:** Only reward final answer
+
+### RLHF (Reinforcement Learning from Human Feedback)
+
+Training approach where human preferences guide model improvement.
+
+**Process:** Humans rank outputs → Train reward model → Use for RL
+
+### RLVR (Reinforcement Learning with Verifiable Rewards)
+
+RL training using automated verification (code execution, math checking) instead of human judgment.
+
+**Advantage:** Scales infinitely without human labelers
+
+## S
+
+### SFT (Supervised Fine-Tuning)
+
+Training on instruction-response pairs to teach model to follow instructions.
+
+**Data:** Thousands of (prompt, desired_response) examples
+
+**Purpose:** Teach model conversation format before RL
+
+### Standardization
+
+Also called z-score normalization. Converting values to have mean=0, std=1.
+
+**Formula:** `z = (x - mean) / std`
+
+**Used in:** GRPO advantage calculation
+
+## T
+
+### Temperature
+
+Sampling parameter controlling randomness/exploration in generation.
+
+**Range:** 0.0-2.0
+- Low (0.1-0.5): Focused, deterministic
+- Medium (0.8-1.2): Balanced
+- High (1.3-2.0): Creative, diverse
+
+### Token
+
+Piece of text (word or subword) that models process.
+
+**Example:** "understanding" = ["under", "stand", "ing"] = 3 tokens
+
+### TRL (Transformer Reinforcement Learning)
+
+HuggingFace library for training language models with RL.
+
+**Provides:** GRPO, PPO, DPO trainers
+
+## V
+
+### vLLM
+
+High-performance inference engine for LLMs using PagedAttention and continuous batching.
+
+**Speedup:** 10-25x vs standard HuggingFace generation
+
+**Production:** Mandatory for serious RL training
+
+### Value Model
+
+Neural network that predicts expected future rewards. Used in PPO but not GRPO.
+
+## W
+
+### Wandb (Weights & Biases)
+
+Popular experiment tracking platform for ML.
+
+**Tracks:** Metrics, hyperparameters, system usage, model checkpoints
+
+## Quick Reference Tables
+
+### Common Hyperparameters
+
+| Parameter | Range | Default | Purpose |
+|-----------|-------|---------|---------|
+| learning_rate | 1e-7 to 1e-5 | 5e-6 | Update step size |
+| temperature | 0.8 to 1.5 | 1.0 | Exploration level |
+| num_generations | 4 to 32 | 8 | Rollouts per prompt |
+| kl_coef | 0.01 to 0.2 | 0.05 | Drift constraint |
+| batch_size | 1 to 16 | 2-4 | Examples per step |
+
+### Memory Usage
+
+| Technique | Savings | Quality Impact |
+|-----------|---------|----------------|
+| 4-bit quantization | 75% | Minimal (&lt;1%) |
+| Gradient checkpointing | 40% | None |
+| LoRA (vs full fine-tune) | 90% | Minimal |
+| Lower LoRA rank (32→8) | 50% | Small |
+
+### Model Sizes
+
+| Parameters | VRAM (4-bit) | Use Case |
+|------------|--------------|----------|
+| 1B | 2-3 GB | Testing, simple tasks |
+| 3B | 5-7 GB | Most RL experiments |
+| 7B | 10-14 GB | Production quality |
+| 14B+ | 20+ GB | Best quality |
+
+## Acronyms
+
+- **AI:** Artificial Intelligence
+- **DPO:** Direct Preference Optimization
+- **FP16:** 16-bit floating point
+- **GPU:** Graphics Processing Unit
+- **GRPO:** Group Relative Policy Optimization
+- **LLM:** Large Language Model
+- **LoRA:** Low-Rank Adaptation
+- **NLP:** Natural Language Processing
+- **OOM:** Out of Memory
+- **PPO:** Proximal Policy Optimization
+- **RL:** Reinforcement Learning
+- **RLHF:** Reinforcement Learning from Human Feedback
+- **RLVR:** Reinforcement Learning with Verifiable Rewards
+- **SFT:** Supervised Fine-Tuning
+- **TRL:** Transformer Reinforcement Learning
+- **VRAM:** Video RAM (GPU memory)
+
+## Resources
+
+### Official Documentation
+
+- [TRL Documentation](https://huggingface.co/docs/trl)
+- [Unsloth Documentation](https://docs.unsloth.ai)
+- [vLLM Documentation](https://docs.vllm.ai)
+
+### Research Papers
+
+- **GRPO:** DeepSeek R1 technical report
+- **PPO:** "Proximal Policy Optimization Algorithms" (Schulman et al., 2017)
+- **DPO:** "Direct Preference Optimization" (Rafailov et al., 2023)
+- **LoRA:** "LoRA: Low-Rank Adaptation of Large Language Models" (Hu et al., 2021)
+
+### Community
+
+- [TRL GitHub Issues](https://github.com/huggingface/trl/issues)
+- [Unsloth Discord](https://discord.gg/unsloth)
+- [HuggingFace Forums](https://discuss.huggingface.co)
+
+## Next Steps
+
+Now that you understand the terminology:
+
+- [Training Stages](/docs/reinforcement-ai/training/stages) - How models learn
+- [RL Concepts](/docs/reinforcement-ai/fundamentals/rl-concepts) - Core principles
+- [Example 1](/docs/reinforcement-ai/examples/example-1) - Start building

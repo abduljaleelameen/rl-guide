@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="#0f172a"/>
+  <text x="600" y="35" font-size="24" font-weight="bold" fill="#e2e8f0" text-anchor="middle">RL Data Preparation Pipeline</text>
+
+  <!-- Stage 1: Raw Data -->
+  <rect x="50" y="100" width="250" height="180" fill="#1e293b" stroke="#3b82f6" stroke-width="3" rx="10"/>
+  <text x="175" y="135" font-size="16" fill="#3b82f6" font-weight="bold" text-anchor="middle">1. Raw Data</text>
+  <text x="75" y="170" font-size="13" fill="#cbd5e1">Sources:</text>
+  <text x="95" y="195" font-size="12" fill="#94a3b8"> Math problems</text>
+  <text x="95" y="218" font-size="12" fill="#94a3b8"> Code tasks</text>
+  <text x="95" y="241" font-size="12" fill="#94a3b8"> Reasoning questions</text>
+  <text x="95" y="264" font-size="12" fill="#94a3b8"> User prompts</text>
+
+  <!-- Arrow -->
+  <path d="M 300 190 L 370 190" stroke="#10b981" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- Stage 2: Cleaning -->
+  <rect x="370" y="100" width="250" height="180" fill="#1e293b" stroke="#8b5cf6" stroke-width="3" rx="10"/>
+  <text x="495" y="135" font-size="16" fill="#8b5cf6" font-weight="bold" text-anchor="middle">2. Cleaning</text>
+  <text x="395" y="170" font-size="13" fill="#cbd5e1">Remove:</text>
+  <text x="415" y="195" font-size="12" fill="#94a3b8"> Duplicates</text>
+  <text x="415" y="218" font-size="12" fill="#94a3b8"> Low quality</text>
+  <text x="415" y="241" font-size="12" fill="#94a3b8"> Toxic content</text>
+  <text x="415" y="264" font-size="12" fill="#10b981"> Keep only high-quality</text>
+
+  <!-- Arrow -->
+  <path d="M 620 190 L 690 190" stroke="#10b981" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- Stage 3: Formatting -->
+  <rect x="690" y="100" width="250" height="180" fill="#1e293b" stroke="#fbbf24" stroke-width="3" rx="10"/>
+  <text x="815" y="135" font-size="16" fill="#fbbf24" font-weight="bold" text-anchor="middle">3. Format</text>
+  <text x="715" y="170" font-size="13" fill="#cbd5e1">Structure:</text>
+  <text x="735" y="195" font-size="12" fill="#94a3b8"> Prompt template</text>
+  <text x="735" y="218" font-size="12" fill="#cbd5e1" font-family="monospace">{instruction}</text>
+  <text x="735" y="241" font-size="12" fill="#cbd5e1" font-family="monospace">{context}</text>
+  <text x="735" y="264" font-size="12" fill="#10b981"> Standardized format</text>
+
+  <!-- Stage 4: Sampling -->
+  <rect x="50" y="320" width="250" height="200" fill="#1e293b" stroke="#10b981" stroke-width="3" rx="10"/>
+  <text x="175" y="355" font-size="16" fill="#10b981" font-weight="bold" text-anchor="middle">4. Generate Samples</text>
+  <text x="75" y="390" font-size="13" fill="#cbd5e1">Model generates:</text>
+  <text x="95" y="415" font-size="12" fill="#94a3b8"> N responses per prompt</text>
+  <text x="95" y="438" font-size="12" fill="#94a3b8"> (N = 4-16 typical)</text>
+  <text x="95" y="461" font-size="12" fill="#cbd5e1">Temperature = 0.7-1.0</text>
+  <text x="95" y="484" font-size="12" fill="#10b981"> Diverse outputs</text>
+  <text x="95" y="507" font-size="12" fill="#10b981"> Exploration</text>
+
+  <!-- Arrow down -->
+  <path d="M 815 280 L 815 320" stroke="#10b981" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- Stage 5: Scoring -->
+  <rect x="370" y="320" width="250" height="200" fill="#1e293b" stroke="#ec4899" stroke-width="3" rx="10"/>
+  <text x="495" y="355" font-size="16" fill="#ec4899" font-weight="bold" text-anchor="middle">5. Compute Rewards</text>
+  <text x="395" y="390" font-size="13" fill="#cbd5e1">For each response:</text>
+  <text x="415" y="415" font-size="12" fill="#94a3b8"> Apply reward function</text>
+  <text x="415" y="438" font-size="12" fill="#94a3b8"> Check correctness</text>
+  <text x="415" y="461" font-size="12" fill="#94a3b8"> Measure quality</text>
+  <text x="415" y="484" font-size="12" fill="#10b981"> Reward = 0.8</text>
+  <text x="415" y="507" font-size="12" fill="#ef4444"> Reward = -0.5</text>
+
+  <!-- Arrow -->
+  <path d="M 300 420 L 370 420" stroke="#10b981" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- Stage 6: Training -->
+  <rect x="690" y="320" width="250" height="200" fill="#1e293b" stroke="#06b6d4" stroke-width="3" rx="10"/>
+  <text x="815" y="355" font-size="16" fill="#06b6d4" font-weight="bold" text-anchor="middle">6. RL Training</text>
+  <text x="715" y="390" font-size="13" fill="#cbd5e1">Update policy:</text>
+  <text x="735" y="415" font-size="12" fill="#94a3b8"> Batch of experiences</text>
+  <text x="735" y="438" font-size="12" fill="#94a3b8"> PPO/GRPO update</text>
+  <text x="735" y="461" font-size="12" fill="#10b981"> Increase P(good)</text>
+  <text x="735" y="484" font-size="12" fill="#ef4444"> Decrease P(bad)</text>
+  <text x="735" y="507" font-size="12" fill="#fbbf24"> Improved model!</text>
+
+  <!-- Arrow -->
+  <path d="M 620 420 L 690 420" stroke="#10b981" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <!-- Best Practices -->
+  <rect x="50" y="550" width="1100" height="120" fill="#0f172a" stroke="#10b981" stroke-width="3" rx="10"/>
+  <text x="600" y="585" font-size="16" fill="#10b981" font-weight="bold" text-anchor="middle"> Best Practices</text>
+  <text x="80" y="615" font-size="13" fill="#cbd5e1"> Balance dataset across domains (40% math, 30% code, 20% reasoning, 10% general)</text>
+  <text x="80" y="640" font-size="13" fill="#cbd5e1"> Monitor reward distribution (avoid all positive or all negative)</text>
+  <text x="80" y="665" font-size="13" fill="#cbd5e1"> Cache generated samples to speed up training iterations</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#10b981"/>
+    </marker>
+  </defs>
+</svg>

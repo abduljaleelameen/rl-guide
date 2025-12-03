@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1150">
+  <rect width="1000" height="1150" fill="#0f172a"/>
+  <text x="500" y="35" font-size="24" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Flowchart: Proximity Rewards (example3.py)</text>
+
+  <!-- Start -->
+  <ellipse cx="500" cy="90" rx="70" ry="35" fill="#10b981" stroke="#34d399" stroke-width="2"/>
+  <text x="500" y="98" font-size="14" fill="white" text-anchor="middle" font-weight="bold">START</text>
+
+  <path d="M 500 125 L 500 160" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Load Components -->
+  <rect x="350" y="160" width="300" height="70" fill="#3b82f6" rx="8"/>
+  <text x="500" y="190" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Load Model &amp; Embeddings</text>
+  <text x="500" y="210" font-size="11" fill="#dbeafe" text-anchor="middle">SentenceTransformer for similarity</text>
+
+  <path d="M 500 230 L 500 270" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Define Target -->
+  <rect x="350" y="270" width="300" height="90" fill="#8b5cf6" rx="8"/>
+  <text x="500" y="300" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Define Target Behavior</text>
+  <text x="500" y="325" font-size="11" fill="#e9d5ff" text-anchor="middle">reference_text = "Explain clearly</text>
+  <text x="500" y="345" font-size="11" fill="#e9d5ff" text-anchor="middle">and concisely..."</text>
+
+  <path d="M 500 360 L 500 400" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Training Loop -->
+  <rect x="300" y="400" width="400" height="50" fill="#8b5cf6" rx="8"/>
+  <text x="500" y="430" font-size="14" fill="white" text-anchor="middle" font-weight="bold">Training Loop (8000 steps)</text>
+
+  <path d="M 500 450 L 500 490" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Generate -->
+  <rect x="350" y="490" width="300" height="70" fill="#fbbf24" rx="8"/>
+  <text x="500" y="520" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Generate Responses</text>
+  <text x="500" y="540" font-size="11" fill="#fef3c7" text-anchor="middle">N=8 outputs per prompt</text>
+
+  <path d="M 500 560 L 500 600" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Reward Function -->
+  <rect x="50" y="600" width="900" height="300" fill="#1e293b" stroke="#ec4899" stroke-width="3" rx="10"/>
+  <text x="500" y="635" font-size="16" fill="#ec4899" font-weight="bold" text-anchor="middle">PROXIMITY REWARD FUNCTION</text>
+
+  <rect x="100" y="665" width="350" height="200" fill="#0f172a" stroke="#10b981" stroke-width="2" rx="6"/>
+  <text x="275" y="695" font-size="13" fill="#10b981" text-anchor="middle" font-weight="bold">1. Compute Embeddings</text>
+  <text x="130" y="725" font-size="11" fill="#cbd5e1">emb_response = encoder(response)</text>
+  <text x="130" y="745" font-size="11" fill="#cbd5e1">emb_reference = encoder(reference_text)</text>
+  <text x="130" y="770" font-size="11" fill="#94a3b8">Both are 384-dim vectors</text>
+  <text x="130" y="795" font-size="11" fill="#fbbf24">Calculate cosine similarity:</text>
+  <text x="130" y="815" font-size="11" fill="#fbbf24">sim = cosine(emb_response, emb_reference)</text>
+  <text x="130" y="835" font-size="11" fill="#94a3b8">Range: -1 to +1</text>
+
+  <rect x="550" y="665" width="350" height="200" fill="#0f172a" stroke="#10b981" stroke-width="2" rx="6"/>
+  <text x="725" y="695" font-size="13" fill="#10b981" text-anchor="middle" font-weight="bold">2. Map to Reward</text>
+  <text x="580" y="725" font-size="11" fill="#cbd5e1">Scale similarity to reward:</text>
+  <text x="580" y="750" font-size="11" fill="#10b981">if sim &gt; 0.8: reward = +2.0</text>
+  <text x="580" y="770" font-size="11" fill="#10b981">elif sim &gt; 0.6: reward = +1.0</text>
+  <text x="580" y="790" font-size="11" fill="#fbbf24">elif sim &gt; 0.4: reward = +0.3</text>
+  <text x="580" y="810" font-size="11" fill="#ef4444">else: reward = -0.5</text>
+  <text x="580" y="835" font-size="11" fill="#94a3b8">Higher similarity  higher reward</text>
+
+  <path d="M 500 900 L 500 940" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Normalize -->
+  <rect x="350" y="940" width="300" height="70" fill="#06b6d4" rx="8"/>
+  <text x="500" y="970" font-size="13" fill="white" text-anchor="middle" font-weight="bold">Compute Advantages</text>
+  <text x="500" y="990" font-size="11" fill="#cffafe" text-anchor="middle">Advantage = (reward - mean) / std</text>
+
+  <path d="M 500 1010 L 500 1050" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Update -->
+  <rect x="350" y="1050" width="300" height="70" fill="#8b5cf6" rx="8"/>
+  <text x="500" y="1080" font-size="13" fill="white" text-anchor="middle" font-weight="bold">PPO Update</text>
+  <text x="500" y="1100" font-size="11" fill="#e9d5ff" text-anchor="middle">Push outputs closer to reference</text>
+
+  <!-- Loop -->
+  <path d="M 300 450 L 200 450 L 200 525 L 350 525" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="5,5"/>
+  <text x="220" y="485" font-size="11" fill="#fbbf24" font-weight="bold">Loop</text>
+
+  <path d="M 500 1120 L 500 1135" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- End -->
+  <ellipse cx="500" cy="1135" rx="70" ry="15" fill="#ef4444" stroke="#f87171" stroke-width="2"/>
+  <text x="500" y="1140" font-size="13" fill="white" text-anchor="middle" font-weight="bold">END</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#10b981"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="#0f172a"/>
+  <text x="600" y="40" font-size="26" font-weight="bold" fill="#e2e8f0" text-anchor="middle">Training Loss Curves</text>
+  <text x="600" y="70" font-size="14" fill="#94a3b8" text-anchor="middle">Pre-training vs Fine-tuning vs RL</text>
+
+  <!-- Axes -->
+  <line x1="100" y1="600" x2="1100" y2="600" stroke="#475569" stroke-width="2"/>
+  <line x1="100" y1="150" x2="100" y2="600" stroke="#475569" stroke-width="2"/>
+
+  <!-- Y-axis labels -->
+  <text x="80" y="160" font-size="12" fill="#cbd5e1" text-anchor="end">High</text>
+  <text x="80" y="380" font-size="12" fill="#cbd5e1" text-anchor="end">Loss</text>
+  <text x="80" y="600" font-size="12" fill="#cbd5e1" text-anchor="end">Low</text>
+
+  <!-- X-axis labels -->
+  <text x="600" y="635" font-size="14" fill="#cbd5e1" text-anchor="middle">Training Steps</text>
+
+  <!-- Pre-training curve (steep drop) -->
+  <path d="M 120 200 Q 400 180, 1080 550" fill="none" stroke="#3b82f6" stroke-width="4"/>
+  <text x="200" y="190" font-size="14" fill="#3b82f6" font-weight="bold">Pre-training</text>
+
+  <!-- Fine-tuning curve (gradual) -->
+  <path d="M 120 300 Q 600 280, 1080 400" fill="none" stroke="#10b981" stroke-width="4"/>
+  <text x="200" y="290" font-size="14" fill="#10b981" font-weight="bold">Fine-tuning</text>
+
+  <!-- RL curve (noisy) -->
+  <path d="M 120 420 L 200 410 L 300 430 L 400 415 L 500 425 L 600 405 L 700 415 L 800 395 L 900 405 L 1000 385 L 1080 390" fill="none" stroke="#f59e0b" stroke-width="4"/>
+  <text x="200" y="450" font-size="14" fill="#f59e0b" font-weight="bold">RL Training (noisy)</text>
+
+  <!-- Legend -->
+  <rect x="100" y="100" width="400" height="30" fill="#1e293b" rx="6"/>
+  <line x1="120" y1="115" x2="160" y2="115" stroke="#3b82f6" stroke-width="4"/>
+  <text x="170" y="120" font-size="12" fill="#cbd5e1">Pre-training: Fast loss drop</text>
+
+  <line x1="310" y1="115" x2="350" y2="115" stroke="#10b981" stroke-width="4"/>
+  <text x="360" y="120" font-size="12" fill="#cbd5e1">Fine-tuning: Gradual</text>
+
+  <line x1="120" y1="135" x2="160" y2="135" stroke="#f59e0b" stroke-width="4"/>
+  <text x="170" y="140" font-size="12" fill="#cbd5e1">RL: Noisy but effective</text>
+</svg>
