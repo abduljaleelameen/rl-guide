@@ -7,7 +7,7 @@ export function createMetadata(override: Metadata): Metadata {
     openGraph: {
       title: override.title ?? undefined,
       description: override.description ?? undefined,
-      images: '/banner.png',
+      images: '/banner.svg',
       siteName: 'RL Guide',
       ...override.openGraph,
     },
@@ -15,7 +15,7 @@ export function createMetadata(override: Metadata): Metadata {
       card: 'summary_large_image',
       title: override.title ?? undefined,
       description: override.description ?? undefined,
-      images: '/banner.png',
+      images: '/banner.svg',
       ...override.twitter,
     },
     ...override.alternates,

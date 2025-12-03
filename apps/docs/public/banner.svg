@@ -1,0 +1,100 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a0a"/>
+      <stop offset="50%" style="stop-color:#171717"/>
+      <stop offset="100%" style="stop-color:#0a0a0a"/>
+    </linearGradient>
+    <linearGradient id="purpleGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#8b5cf6"/>
+      <stop offset="50%" style="stop-color:#06b6d4"/>
+      <stop offset="100%" style="stop-color:#22c55e"/>
+    </linearGradient>
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ffffff"/>
+      <stop offset="50%" style="stop-color:#e9d5ff"/>
+      <stop offset="100%" style="stop-color:#a5f3fc"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="20" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="150" cy="100" r="200" fill="#8b5cf6" opacity="0.1"/>
+  <circle cx="1050" cy="530" r="250" fill="#06b6d4" opacity="0.1"/>
+  <circle cx="600" cy="315" r="300" fill="#22c55e" opacity="0.05"/>
+
+  <!-- Grid pattern -->
+  <g opacity="0.1">
+    <line x1="0" y1="0" x2="0" y2="630" stroke="#8b5cf6" stroke-width="1"/>
+    <line x1="100" y1="0" x2="100" y2="630" stroke="#8b5cf6" stroke-width="1"/>
+    <line x1="200" y1="0" x2="200" y2="630" stroke="#8b5cf6" stroke-width="1"/>
+    <line x1="300" y1="0" x2="300" y2="630" stroke="#8b5cf6" stroke-width="1"/>
+    <line x1="400" y1="0" x2="400" y2="630" stroke="#8b5cf6" stroke-width="1"/>
+    <line x1="500" y1="0" x2="500" y2="630" stroke="#8b5cf6" stroke-width="1"/>
+    <line x1="600" y1="0" x2="600" y2="630" stroke="#8b5cf6" stroke-width="1"/>
+    <line x1="700" y1="0" x2="700" y2="630" stroke="#8b5cf6" stroke-width="1"/>
+    <line x1="800" y1="0" x2="800" y2="630" stroke="#8b5cf6" stroke-width="1"/>
+    <line x1="900" y1="0" x2="900" y2="630" stroke="#8b5cf6" stroke-width="1"/>
+    <line x1="1000" y1="0" x2="1000" y2="630" stroke="#8b5cf6" stroke-width="1"/>
+    <line x1="1100" y1="0" x2="1100" y2="630" stroke="#8b5cf6" stroke-width="1"/>
+    <line x1="1200" y1="0" x2="1200" y2="630" stroke="#8b5cf6" stroke-width="1"/>
+  </g>
+
+  <!-- Brain icon -->
+  <g transform="translate(520, 120)" filter="url(#glow)">
+    <circle cx="80" cy="80" r="70" fill="none" stroke="url(#purpleGlow)" stroke-width="3"/>
+    <path d="M80 30 C60 30 45 50 45 70 C45 85 55 100 70 105 L70 120 L90 120 L90 105 C105 100 115 85 115 70 C115 50 100 30 80 30 M60 60 C60 55 65 50 70 50 M100 60 C100 55 95 50 90 50 M65 80 L95 80"
+          fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Main title -->
+  <text x="600" y="290" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="bold" fill="url(#textGradient)">
+    RL Guide
+  </text>
+
+  <!-- Subtitle -->
+  <text x="600" y="360" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="32" fill="#a1a1aa">
+    Reinforcement Learning for LLMs
+  </text>
+
+  <!-- Description -->
+  <text x="600" y="420" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#71717a">
+    Master RLHF, PPO, and GRPO with hands-on examples
+  </text>
+
+  <!-- Feature badges -->
+  <g transform="translate(300, 480)">
+    <rect x="0" y="0" width="140" height="36" rx="18" fill="#8b5cf6" opacity="0.2"/>
+    <text x="70" y="24" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#c4b5fd">9 Examples</text>
+  </g>
+  <g transform="translate(460, 480)">
+    <rect x="0" y="0" width="140" height="36" rx="18" fill="#06b6d4" opacity="0.2"/>
+    <text x="70" y="24" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#67e8f9">PPO vs GRPO</text>
+  </g>
+  <g transform="translate(620, 480)">
+    <rect x="0" y="0" width="180" height="36" rx="18" fill="#22c55e" opacity="0.2"/>
+    <text x="90" y="24" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#86efac">Production Ready</text>
+  </g>
+
+  <!-- Decorative particles -->
+  <circle cx="100" cy="200" r="3" fill="#8b5cf6" opacity="0.6"/>
+  <circle cx="200" cy="150" r="2" fill="#06b6d4" opacity="0.6"/>
+  <circle cx="1000" cy="180" r="4" fill="#22c55e" opacity="0.6"/>
+  <circle cx="1100" cy="250" r="2" fill="#8b5cf6" opacity="0.6"/>
+  <circle cx="150" cy="450" r="3" fill="#06b6d4" opacity="0.6"/>
+  <circle cx="1050" cy="400" r="3" fill="#8b5cf6" opacity="0.6"/>
+
+  <!-- Connecting lines -->
+  <line x1="100" y1="200" x2="200" y2="150" stroke="#8b5cf6" stroke-width="1" opacity="0.2"/>
+  <line x1="1000" y1="180" x2="1100" y2="250" stroke="#06b6d4" stroke-width="1" opacity="0.2"/>
+</svg>
