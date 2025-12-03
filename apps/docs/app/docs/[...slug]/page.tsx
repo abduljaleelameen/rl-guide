@@ -19,7 +19,6 @@ import Link from 'fumadocs-core/link';
 import { getPageTreePeers } from 'fumadocs-core/page-tree';
 import { Card, Cards } from 'fumadocs-ui/components/card';
 import { getMDXComponents } from '@/mdx-components';
-import { LLMCopyButton, ViewOptions } from '@/components/ai/page-actions';
 import { Banner } from 'fumadocs-ui/components/banner';
 import { Installation } from '@/components/preview/installation';
 import { Customisation } from '@/components/preview/customisation';
@@ -75,16 +74,9 @@ export default async function Page(props: PageProps<'/docs/[...slug]'>) {
       }}
     >
       <h1 className="text-[1.75em] font-semibold">{page.data.title}</h1>
-      <p className="text-lg text-fd-muted-foreground mb-2">
+      <p className="text-lg text-fd-muted-foreground mb-6">
         {page.data.description}
       </p>
-      <div className="flex flex-row flex-wrap gap-2 items-center border-b pb-6">
-        <LLMCopyButton markdownUrl={`${page.url}.mdx`} />
-        <ViewOptions
-          markdownUrl={`${page.url}.mdx`}
-          githubUrl={`https://github.com/${owner}/${repo}/blob/dev/apps/docs/content/docs/${page.path}`}
-        />
-      </div>
       <div className="prose flex-1 text-fd-foreground/90">
         {page.data.preview && <PreviewRenderer preview={page.data.preview} />}
         <Mdx

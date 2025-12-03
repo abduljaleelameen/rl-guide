@@ -61,15 +61,36 @@ apps/
 
 ## Deployment
 
-This project is configured for deployment on Vercel with GitHub Actions CI/CD.
+This project is configured for deployment on **Render** with GitHub Actions CI/CD.
 
-### Environment Variables
+### Deploy to Render
 
-Set the following secrets in your GitHub repository:
+1. **Create a Render account** at [render.com](https://render.com)
 
-- `VERCEL_TOKEN`
-- `VERCEL_ORG_ID`
-- `VERCEL_PROJECT_ID`
+2. **Connect your GitHub repository:**
+   - Go to Render Dashboard → New → Web Service
+   - Connect your GitHub account and select `abduljaleelameen/rl-guide`
+
+3. **Configure the service:**
+   - **Name:** `rl-guide`
+   - **Runtime:** Node
+   - **Build Command:** `npm install -g pnpm && pnpm install && pnpm build`
+   - **Start Command:** `cd apps/docs && pnpm start`
+   - **Environment Variables:**
+     - `NODE_VERSION`: `20`
+
+4. **Enable Auto-Deploy** (optional):
+   - Get your Deploy Hook URL from Render Settings
+   - Add `RENDER_DEPLOY_HOOK_URL` to your GitHub repository secrets
+
+### CI/CD Pipeline
+
+The GitHub Actions workflow (`.github/workflows/ci.yml`) automatically:
+
+- Runs on every push to `dev` or `main` branches
+- Installs dependencies and builds the project
+- Runs tests
+- Triggers Render deployment on successful build to `dev` branch
 
 ## Tech Stack
 
@@ -77,7 +98,7 @@ Set the following secrets in your GitHub repository:
 - **Styling**: Tailwind CSS
 - **Documentation**: MDX
 - **Math**: KaTeX
-- **Deployment**: Vercel
+- **Deployment**: Render
 
 ## Contributing
 

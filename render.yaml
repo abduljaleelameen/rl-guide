@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: rl-guide
+    runtime: node
+    buildCommand: npm install -g pnpm && pnpm install && pnpm build
+    startCommand: cd apps/docs && pnpm start
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
+    healthCheckPath: /
+    autoDeploy: true

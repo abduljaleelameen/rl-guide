@@ -11,11 +11,7 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 At its core, reinforcement learning is simple: an agent takes actions in an environment and learns from the rewards it receives. This same principle applies whether you're training a video game AI or a language model!
 
-<Callout title="Interactive Demo" type="info">
-Click on each step below to learn more, or let it animate automatically!
-</Callout>
-
-<AgentLoopAnimation />
+![Agent-Environment Loop](/reinforcement-ai/10-rl-agent-loop.svg)
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
   <div className="p-6 rounded-lg border bg-card">
@@ -68,11 +64,14 @@ Think of reinforcement learning like playing Pac-Man. The game teaches you what'
 
 The magic of RL is in the reward function. Let's see how it works with a simple math example:
 
-<Callout title="Try It Yourself!" type="info">
-Click on different responses to see their scores, or type your own answer!
-</Callout>
+Consider a simple math problem: **"What is 2 + 2?"**
 
-<RewardVisualizer />
+| Response | Score | Reason |
+|----------|-------|--------|
+| "4" | +1.0 | Correct answer |
+| "The answer is 4" | +0.9 | Correct with explanation |
+| "22" | -0.5 | Incorrect (concatenation error) |
+| "I don't know" | -0.3 | No attempt |
 
 <Callout title="Key Insight">
   This is exactly how **RLVR (RL with Verifiable Rewards)** works! For math and code, we can automatically check if answers are correct - no human needed. This enabled the breakthrough reasoning capabilities in models like O1 and DeepSeek R1.
@@ -82,11 +81,12 @@ Click on different responses to see their scores, or type your own answer!
 
 Imagine all possible AI models as points in a vast space. Training is a journey through this space, looking for the "best" model:
 
-<Callout title="Interactive Training Journey" type="info">
-Press play to watch the model evolve through training stages, or click on any stage to jump to it!
-</Callout>
+The training journey typically follows these stages:
 
-<TrainingProgress />
+1. **Pre-training** - Learn language patterns from vast text data
+2. **Supervised Fine-tuning (SFT)** - Learn from human-written examples
+3. **Reward Model Training** - Learn human preferences
+4. **RL Optimization** - Maximize reward while staying close to base model
 
 ## Single-Turn vs Multi-Turn RL
 
